@@ -159,11 +159,22 @@ def index():
     try:
         bot_info = get_bot_info()
         if not bot_info:
-            bot_info = {'username': 'Royal Guard Bot', 'id': '1367420411922354196'}
+            bot_info = {'username': 'Royal Guard Bot', 'id': '1367420411922354196', 'avatar': None}
         return render_template('index.html', bot_info=bot_info)
     except Exception as e:
         print(f"Error in index route: {e}")
-        return f"<h1>Royal Guard Bot Dashboard</h1><p>Bot offline. <a href='/login'>Login</a></p>", 200
+        # Return simple HTML that doesn't require templates
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head><title>Royal Guard Bot</title></head>
+        <body>
+            <h1>Royal Guard Bot Dashboard</h1>
+            <p>Service is starting up...</p>
+            <a href="/login">Login with Discord</a>
+        </body>
+        </html>
+        """, 200
 
 @app.route('/login')
 def login():
@@ -350,6 +361,11 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
+@app.route('/health')
+def health():
+    return {'status': 'healthy', 'service': 'Royal Guard Bot Dashboard'}, 200
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
-s
+    port = int(os.environ.get('PORT', 5000))
+    print(f"Starting Flask app on port {port}")
+    app.run(debug=False, host='0.0.0.0', port=port)

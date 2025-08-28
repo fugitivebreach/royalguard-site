@@ -27,16 +27,21 @@ app.secret_key = os.getenv('SECRET_KEY', secrets.token_hex(16))
 DISCORD_CLIENT_ID = os.getenv('DISCORD_CLIENT_ID')
 DISCORD_CLIENT_SECRET = os.getenv('DISCORD_CLIENT_SECRET')
 DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
-MONGO_URI = os.getenv('MONGO_URI', "mongodb+srv://arrowsbritisharmy:cXgXOnuDac4RnAbP@cluster.muqrpfg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster")
+MONGO_URI = os.getenv('MONGO_URI')
 REDIRECT_URI = os.getenv('REDIRECT_URI', 'http://localhost:5000/callback')
 
 # MongoDB setup - with error handling
 try:
-    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-    db = client.bot_configs
-    # Test connection
-    client.admin.command('ping')
-    print("MongoDB connection successful")
+    if MONGO_URI:
+        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+        db = client.bot_configs
+        # Test connection
+        client.admin.command('ping')
+        print("MongoDB connection successful")
+    else:
+        print("MongoDB URI not configured")
+        client = None
+        db = None
 except Exception as e:
     print(f"MongoDB connection failed: {e}")
     client = None
@@ -147,15 +152,17 @@ def user_can_manage_guild(user_id, guild_id, user_guilds):
 def index():
     try:
         bot_info = get_bot_info()
+        if not bot_info:
+            bot_info = {'username': 'Royal Guard Bot', 'id': '1367420411922354196'}
         return render_template('index.html', bot_info=bot_info)
     except Exception as e:
         print(f"Error in index route: {e}")
-        return "Service starting up...", 200
+        return f"<h1>Royal Guard Bot Dashboard</h1><p>Bot offline. <a href='/login'>Login</a></p>", 200
 
 @app.route('/login')
 def login():
-    if not DISCORD_CLIENT_ID:
-        return "Discord OAuth not configured", 500
+    if not DISCORD_CLIENT_ID or not DISCORD_CLIENT_SECRET:
+        return "Discord OAuth not configured - missing client credentials", 500
     
     params = {
         'client_id': DISCORD_CLIENT_ID,

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1 class="hero-title">
+                {% if bot_info %}
+                <img src="https://cdn.discordapp.com/avatars/{{ bot_info.id }}/{{ bot_info.avatar }}.png?size=128" alt="{{ bot_info.username }}" class="hero-bot-avatar">
+                {{ bot_info.username }}
+                {% else %}
+                Royal Guard Bot
+                {% endif %}
+            </h1>
+            <p class="hero-description">
+                Manage your Discord server with powerful moderation, verification, and administration tools.
+            </p>
+            <div class="hero-buttons">
+                <a href="{{ url_for('login') }}" class="btn btn-primary">
+                    <i class="fab fa-discord"></i>
+                    Login with Discord
+                </a>
+                <a href="{{ url_for('invite') }}" class="btn btn-secondary">
+                    <i class="fas fa-plus-circle"></i>
+                    Add to Server
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="features-section">
+    <div class="container">
+        <h2 class="section-title">Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Advanced Moderation</h3>
+                <p>Comprehensive moderation tools with customizable rules and automated actions.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <h3>Verification System</h3>
+                <p>Secure verification system with Roblox integration and role management.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <h3>Easy Configuration</h3>
+                <p>Web-based dashboard for easy server configuration and management.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+                <h3>Ticket System</h3>
+                <p>Advanced ticket system for support and reporting with automated workflows.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

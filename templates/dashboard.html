@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container">
+        <h1 class="dashboard-title">
+            <i class="fas fa-tachometer-alt"></i>
+            Server Dashboard
+        </h1>
+        <p class="dashboard-subtitle">Select a server to configure</p>
+    </div>
+</div>
+
+<div class="dashboard-content">
+    <div class="container">
+        {% if guilds %}
+        <div class="servers-grid">
+            {% for guild in guilds %}
+            <div class="server-card">
+                <div class="server-icon">
+                    {% if guild.icon %}
+                    <img src="https://cdn.discordapp.com/icons/{{ guild.id }}/{{ guild.icon }}.png?size=64" alt="{{ guild.name }}">
+                    {% else %}
+                    <div class="server-icon-placeholder">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="server-info">
+                    <h3 class="server-name">{{ guild.name }}</h3>
+                    <p class="server-id">ID: {{ guild.id }}</p>
+                    {% if guild.owner %}
+                    <span class="owner-badge">
+                        <i class="fas fa-crown"></i>
+                        Owner
+                    </span>
+                    {% else %}
+                    <span class="admin-badge">
+                        <i class="fas fa-user-shield"></i>
+                        Administrator
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="server-actions">
+                    <a href="{{ url_for('configure_guild', guild_id=guild.id) }}" class="btn btn-primary">
+                        <i class="fas fa-cog"></i>
+                        Configure
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-server"></i>
+            </div>
+            <h3>No Servers Available</h3>
+            <p>You don't have any servers where you can manage the bot configuration.</p>
+            <p>Make sure you have Administrator permissions or are the server owner in servers where the bot is present.</p>
+            <a href="{{ url_for('invite') }}" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i>
+                Add Bot to Server
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

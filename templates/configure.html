@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="configure-header">
+    <div class="container">
+        <div class="server-header">
+            <div class="server-icon">
+                {% if guild.icon %}
+                <img src="https://cdn.discordapp.com/icons/{{ guild.id }}/{{ guild.icon }}.png?size=64" alt="{{ guild.name }}">
+                {% else %}
+                <div class="server-icon-placeholder">
+                    <i class="fas fa-server"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="server-details">
+                <h1 class="server-name">{{ guild.name }}</h1>
+                <p class="server-id">Configuring server: {{ guild.id }}</p>
+            </div>
+        </div>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i>
+            Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="configure-content">
+    <div class="container">
+        <form id="configForm" class="config-form">
+            <div class="config-sections">
+                <!-- Role Configuration -->
+                <div class="config-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-users"></i>
+                        Role Configuration
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="support_role_id">Support Role</label>
+                            <select id="support_role_id" name="support_role_id" class="role-select">
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if config.support_role_id == role.id %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="moderator_role_id">Moderator Role</label>
+                            <select id="moderator_role_id" name="moderator_role_id" class="role-select">
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if config.moderator_role_id == role.id %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="administrator_role_id">Administrator Role</label>
+                            <select id="administrator_role_id" name="administrator_role_id" class="role-select">
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if config.administrator_role_id == role.id %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="suspended_role_id">Suspended Role</label>
+                            <select id="suspended_role_id" name="suspended_role_id" class="role-select">
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if config.suspended_role_id == role.id %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="verified_role_id">Verified Role</label>
+                            <select id="verified_role_id" name="verified_role_id" class="role-select">
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if config.verified_role_id == role.id %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="nitro_role_id">Nitro Role</label>
+                            <select id="nitro_role_id" name="nitro_role_id" class="role-select">
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if config.nitro_role_id == role.id %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Channel Configuration -->
+                <div class="config-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-hashtag"></i>
+                        Channel Configuration
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="moderation_logs">Moderation Logs</label>
+                            <select id="moderation_logs" name="moderation_logs" class="channel-select">
+                                <option value="">Select a channel...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 0 %}
+                                <option value="{{ channel.id }}" {% if config.moderation_logs == channel.id %}selected{% endif %}>
+                                    # {{ channel.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="tickets_log_channel_id">Tickets Log Channel</label>
+                            <select id="tickets_log_channel_id" name="tickets_log_channel_id" class="channel-select">
+                                <option value="">Select a channel...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 0 %}
+                                <option value="{{ channel.id }}" {% if config.tickets_log_channel_id == channel.id %}selected{% endif %}>
+                                    # {{ channel.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="tickets_category_id">Tickets Category</label>
+                            <select id="tickets_category_id" name="tickets_category_id" class="channel-select">
+                                <option value="">Select a category...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 4 %}
+                                <option value="{{ channel.id }}" {% if config.tickets_category_id == channel.id %}selected{% endif %}>
+                                    📁 {{ channel.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="update_logs_channel_id">Update Logs Channel</label>
+                            <select id="update_logs_channel_id" name="update_logs_channel_id" class="channel-select">
+                                <option value="">Select a channel...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 0 %}
+                                <option value="{{ channel.id }}" {% if config.update_logs_channel_id == channel.id %}selected{% endif %}>
+                                    # {{ channel.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Tokens -->
+                <div class="config-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-key"></i>
+                        API Tokens
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="rowifi_api_token">RoWifi API Token</label>
+                            <input type="text" id="rowifi_api_token" name="rowifi_api_token" value="{{ config.rowifi_api_token or '' }}" placeholder="Enter RoWifi API token">
+                        </div>
+                        <div class="form-group">
+                            <label for="trello_api_key">Trello API Key</label>
+                            <input type="text" id="trello_api_key" name="trello_api_key" value="{{ config.trello_api_key or '' }}" placeholder="Enter Trello API key">
+                        </div>
+                        <div class="form-group">
+                            <label for="trello_api_token">Trello API Token</label>
+                            <input type="text" id="trello_api_token" name="trello_api_token" value="{{ config.trello_api_token or '' }}" placeholder="Enter Trello API token">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Lists -->
+                <div class="config-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-list"></i>
+                        Custom Configuration
+                    </h3>
+                    
+                    <!-- Blacklisted Groups -->
+                    <div class="list-config">
+                        <label>Blacklisted Groups</label>
+                        <div id="blacklisted_groups" class="list-container">
+                            {% for group in config.blacklisted_groups or [] %}
+                            <div class="list-item">
+                                <input type="number" value="{{ group }}" placeholder="Group ID">
+                                <button type="button" class="remove-item">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="add-item" onclick="addListItem('blacklisted_groups', 'number')">
+                            <i class="fas fa-plus"></i>
+                            Add Group ID
+                        </button>
+                    </div>
+
+                    <!-- Whitelisted Groups -->
+                    <div class="list-config">
+                        <label>Whitelisted Groups</label>
+                        <div id="whitelisted_groups" class="list-container">
+                            {% for group in config.whitelisted_groups or [] %}
+                            <div class="list-item">
+                                <input type="number" value="{{ group }}" placeholder="Group ID">
+                                <button type="button" class="remove-item">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="add-item" onclick="addListItem('whitelisted_groups', 'number')">
+                            <i class="fas fa-plus"></i>
+                            Add Group ID
+                        </button>
+                    </div>
+
+                    <!-- Blacklisted Names -->
+                    <div class="list-config">
+                        <label>Blacklisted Names</label>
+                        <div id="blacklisted_names" class="list-container">
+                            {% for name in config.blacklisted_names or [] %}
+                            <div class="list-item">
+                                <input type="text" value="{{ name }}" placeholder="Name">
+                                <button type="button" class="remove-item">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="add-item" onclick="addListItem('blacklisted_names', 'text')">
+                            <i class="fas fa-plus"></i>
+                            Add Name
+                        </button>
+                    </div>
+
+                    <!-- Groups to Check -->
+                    <div class="list-config">
+                        <label>Groups to Check</label>
+                        <div id="groups_to_check" class="list-container">
+                            {% for group in config.groups_to_check or [] %}
+                            <div class="list-item">
+                                <input type="number" value="{{ group }}" placeholder="Group ID">
+                                <button type="button" class="remove-item">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="add-item" onclick="addListItem('groups_to_check', 'number')">
+                            <i class="fas fa-plus"></i>
+                            Add Group ID
+                        </button>
+                    </div>
+
+                    <!-- Color Roles -->
+                    <div class="list-config">
+                        <label>Color Roles</label>
+                        <div id="colour_roles" class="list-container">
+                            {% for role in config.colour_roles or [] %}
+                            <div class="list-item">
+                                <input type="text" value="{{ role }}" placeholder="Role Name">
+                                <button type="button" class="remove-item">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="add-item" onclick="addListItem('colour_roles', 'text')">
+                            <i class="fas fa-plus"></i>
+                            Add Color Role
+                        </button>
+                    </div>
+
+                    <!-- Timezone Roles -->
+                    <div class="list-config">
+                        <label>Timezone Roles</label>
+                        <div id="timezone_roles" class="list-container">
+                            {% for role in config.timezone_roles or [] %}
+                            <div class="list-item">
+                                <input type="text" value="{{ role }}" placeholder="Timezone">
+                                <button type="button" class="remove-item">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="add-item" onclick="addListItem('timezone_roles', 'text')">
+                            <i class="fas fa-plus"></i>
+                            Add Timezone
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Save Configuration
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                    <i class="fas fa-undo"></i>
+                    Reset
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/configure.js"></script>
+{% endblock %}

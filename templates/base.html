@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ bot_info.username if bot_info else 'Royal Guard Bot' }} Dashboard{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ bot_info.avatar_url if bot_info else '/static/favicon.png' }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                {% if bot_info %}
+                <img src="https://cdn.discordapp.com/avatars/{{ bot_info.id }}/{{ bot_info.avatar }}.png?size=64" alt="{{ bot_info.username }}" class="bot-avatar">
+                <span class="bot-name">{{ bot_info.username }}</span>
+                {% else %}
+                <span class="bot-name">Royal Guard Bot</span>
+                {% endif %}
+            </div>
+            <div class="nav-tabs">
+                <a href="{{ url_for('dashboard') }}" class="nav-tab {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+                <a href="{{ url_for('invite') }}" class="nav-tab">
+                    <i class="fas fa-plus-circle"></i>
+                    Add To Server
+                </a>
+            </div>
+            <div class="nav-user">
+                {% if session.user %}
+                <div class="user-info">
+                    <img src="https://cdn.discordapp.com/avatars/{{ session.user.id }}/{{ session.user.avatar }}.png?size=32" alt="{{ session.user.username }}" class="user-avatar">
+                    <span class="username">{{ session.user.username }}</span>
+                    <a href="{{ url_for('logout') }}" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            <i class="fas fa-{% if category == 'error' %}exclamation-triangle{% else %}check-circle{% endif %}"></i>
+                            {{ message }}
+                            <button class="close-flash" onclick="this.parentElement.remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="/static/js/main.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

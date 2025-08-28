@@ -1,0 +1,196 @@
+// Configuration page JavaScript functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('configForm');
+    
+    // Form submission handler
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        submitBtn.disabled = true;
+        
+        try {
+            const formData = collectFormData();
+            const guildId = window.location.pathname.split('/').pop();
+            
+            const response = await fetch(`/save_config/${guildId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showNotification('Configuration saved successfully!', 'success');
+            } else {
+                showNotification('Error saving configuration: ' + result.message, 'error');
+            }
+        } catch (error) {
+            showNotification('Error saving configuration: ' + error.message, 'error');
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+    
+    // Initialize existing list items with remove functionality
+    document.querySelectorAll('.list-item .remove-item').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.parentElement.remove();
+        });
+    });
+});
+
+// Add new list item
+function addListItem(containerId, inputType) {
+    const container = document.getElementById(containerId);
+    const listContainer = container.querySelector('.list-container');
+    
+    const listItem = document.createElement('div');
+    listItem.className = 'list-item';
+    
+    const input = document.createElement('input');
+    input.type = inputType;
+    input.placeholder = inputType === 'number' ? 'Enter ID' : 'Enter value';
+    
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'remove-item';
+    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+    removeBtn.addEventListener('click', function() {
+        listItem.remove();
+    });
+    
+    listItem.appendChild(input);
+    listItem.appendChild(removeBtn);
+    listContainer.appendChild(listItem);
+    
+    // Focus the new input
+    input.focus();
+}
+
+// Collect all form data
+function collectFormData() {
+    const formData = {};
+    
+    // Collect regular form fields
+    const inputs = document.querySelectorAll('#configForm input, #configForm select');
+    inputs.forEach(input => {
+        if (input.name && input.value) {
+            if (input.type === 'number') {
+                formData[input.name] = parseInt(input.value);
+            } else {
+                formData[input.name] = input.value;
+            }
+        }
+    });
+    
+    // Collect list data
+    const listContainers = document.querySelectorAll('.list-container');
+    listContainers.forEach(container => {
+        const containerId = container.parentElement.id;
+        const values = [];
+        
+        container.querySelectorAll('.list-item input').forEach(input => {
+            if (input.value.trim()) {
+                if (input.type === 'number') {
+                    values.push(parseInt(input.value));
+                } else {
+                    values.push(input.value.trim());
+                }
+            }
+        });
+        
+        if (values.length > 0) {
+            formData[containerId] = values;
+        }
+    });
+    
+    return formData;
+}
+
+// Reset form to original state
+function resetForm() {
+    if (confirm('Are you sure you want to reset all changes?')) {
+        location.reload();
+    }
+}
+
+// Show notification
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `flash-message flash-${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'check-circle'}"></i>
+        ${message}
+        <button class="close-flash" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    let flashContainer = document.querySelector('.flash-messages');
+    if (!flashContainer) {
+        flashContainer = document.createElement('div');
+        flashContainer.className = 'flash-messages';
+        document.body.appendChild(flashContainer);
+    }
+    
+    flashContainer.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }
+    }, 5000);
+}
+
+// Enhanced select styling
+document.querySelectorAll('select').forEach(select => {
+    select.addEventListener('focus', function() {
+        this.style.borderColor = 'rgba(255, 215, 0, 0.6)';
+        this.style.boxShadow = '0 0 0 3px rgba(255, 215, 0, 0.1)';
+    });
+    
+    select.addEventListener('blur', function() {
+        this.style.borderColor = 'var(--border-color)';
+        this.style.boxShadow = 'none';
+    });
+});
+
+// Auto-save draft functionality (optional)
+let autoSaveTimeout;
+document.querySelectorAll('#configForm input, #configForm select').forEach(input => {
+    input.addEventListener('input', function() {
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = setTimeout(() => {
+            const formData = collectFormData();
+            localStorage.setItem('configDraft_' + window.location.pathname.split('/').pop(), JSON.stringify(formData));
+        }, 1000);
+    });
+});
+
+// Load draft on page load
+window.addEventListener('load', function() {
+    const guildId = window.location.pathname.split('/').pop();
+    const draft = localStorage.getItem('configDraft_' + guildId);
+    
+    if (draft) {
+        try {
+            const draftData = JSON.parse(draft);
+            // You could implement draft loading here if needed
+            console.log('Draft found:', draftData);
+        } catch (e) {
+            console.error('Error loading draft:', e);
+        }
+    }
+});

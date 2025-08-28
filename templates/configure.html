@@ -199,115 +199,127 @@
                     <!-- Blacklisted Groups -->
                     <div class="list-config">
                         <label>Blacklisted Groups</label>
-                        <div id="blacklisted_groups" class="list-container">
-                            {% for group in config.blacklisted_groups or [] %}
-                            <div class="list-item">
-                                <input type="number" value="{{ group }}" placeholder="Group ID">
-                                <button type="button" class="remove-item">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                        <div id="blacklisted_groups">
+                            <div class="list-container">
+                                {% for group in config.blacklisted_groups or [] %}
+                                <div class="list-item">
+                                    <input type="number" value="{{ group }}" placeholder="Group ID">
+                                    <button type="button" class="remove-item">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
+                            <button type="button" class="add-item" onclick="addListItem('blacklisted_groups', 'number')">
+                                <i class="fas fa-plus"></i>
+                                Add Group ID
+                            </button>
                         </div>
-                        <button type="button" class="add-item" onclick="addListItem('blacklisted_groups', 'number')">
-                            <i class="fas fa-plus"></i>
-                            Add Group ID
-                        </button>
                     </div>
 
                     <!-- Whitelisted Groups -->
                     <div class="list-config">
                         <label>Whitelisted Groups</label>
-                        <div id="whitelisted_groups" class="list-container">
-                            {% for group in config.whitelisted_groups or [] %}
-                            <div class="list-item">
-                                <input type="number" value="{{ group }}" placeholder="Group ID">
-                                <button type="button" class="remove-item">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                        <div id="whitelisted_groups">
+                            <div class="list-container">
+                                {% for group in config.whitelisted_groups or [] %}
+                                <div class="list-item">
+                                    <input type="number" value="{{ group }}" placeholder="Group ID">
+                                    <button type="button" class="remove-item">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
+                            <button type="button" class="add-item" onclick="addListItem('whitelisted_groups', 'number')">
+                                <i class="fas fa-plus"></i>
+                                Add Group ID
+                            </button>
                         </div>
-                        <button type="button" class="add-item" onclick="addListItem('whitelisted_groups', 'number')">
-                            <i class="fas fa-plus"></i>
-                            Add Group ID
-                        </button>
                     </div>
 
                     <!-- Blacklisted Names -->
                     <div class="list-config">
                         <label>Blacklisted Names</label>
-                        <div id="blacklisted_names" class="list-container">
-                            {% for name in config.blacklisted_names or [] %}
-                            <div class="list-item">
-                                <input type="text" value="{{ name }}" placeholder="Name">
-                                <button type="button" class="remove-item">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                        <div id="blacklisted_names">
+                            <div class="list-container">
+                                {% for name in config.blacklisted_names or [] %}
+                                <div class="list-item">
+                                    <input type="text" value="{{ name }}" placeholder="Name">
+                                    <button type="button" class="remove-item">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
+                            <button type="button" class="add-item" onclick="addListItem('blacklisted_names', 'text')">
+                                <i class="fas fa-plus"></i>
+                                Add Name
+                            </button>
                         </div>
-                        <button type="button" class="add-item" onclick="addListItem('blacklisted_names', 'text')">
-                            <i class="fas fa-plus"></i>
-                            Add Name
-                        </button>
                     </div>
 
                     <!-- Groups to Check -->
                     <div class="list-config">
                         <label>Groups to Check</label>
-                        <div id="groups_to_check" class="list-container">
-                            {% for group in config.groups_to_check or [] %}
-                            <div class="list-item">
-                                <input type="number" value="{{ group }}" placeholder="Group ID">
-                                <button type="button" class="remove-item">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                        <div id="groups_to_check">
+                            <div class="list-container">
+                                {% for group in config.groups_to_check or [] %}
+                                <div class="list-item">
+                                    <input type="number" value="{{ group }}" placeholder="Group ID">
+                                    <button type="button" class="remove-item">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
+                            <button type="button" class="add-item" onclick="addListItem('groups_to_check', 'number')">
+                                <i class="fas fa-plus"></i>
+                                Add Group ID
+                            </button>
                         </div>
-                        <button type="button" class="add-item" onclick="addListItem('groups_to_check', 'number')">
-                            <i class="fas fa-plus"></i>
-                            Add Group ID
-                        </button>
                     </div>
 
                     <!-- Color Roles -->
                     <div class="list-config">
                         <label>Color Roles</label>
-                        <div id="colour_roles" class="list-container">
-                            {% for role in config.colour_roles or [] %}
-                            <div class="list-item">
-                                <input type="text" value="{{ role }}" placeholder="Role Name">
-                                <button type="button" class="remove-item">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                        <div id="colour_roles">
+                            <div class="list-container">
+                                {% for role in config.colour_roles or [] %}
+                                <div class="list-item">
+                                    <input type="text" value="{{ role }}" placeholder="Role Name">
+                                    <button type="button" class="remove-item">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
+                            <button type="button" class="add-item" onclick="addListItem('colour_roles', 'text')">
+                                <i class="fas fa-plus"></i>
+                                Add Role
+                            </button>
                         </div>
-                        <button type="button" class="add-item" onclick="addListItem('colour_roles', 'text')">
-                            <i class="fas fa-plus"></i>
-                            Add Color Role
-                        </button>
                     </div>
 
                     <!-- Timezone Roles -->
                     <div class="list-config">
                         <label>Timezone Roles</label>
-                        <div id="timezone_roles" class="list-container">
-                            {% for role in config.timezone_roles or [] %}
-                            <div class="list-item">
-                                <input type="text" value="{{ role }}" placeholder="Timezone">
-                                <button type="button" class="remove-item">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                        <div id="timezone_roles">
+                            <div class="list-container">
+                                {% for role in config.timezone_roles or [] %}
+                                <div class="list-item">
+                                    <input type="text" value="{{ role }}" placeholder="Timezone">
+                                    <button type="button" class="remove-item">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
+                            <button type="button" class="add-item" onclick="addListItem('timezone_roles', 'text')">
+                                <i class="fas fa-plus"></i>
+                                Add Timezone
+                            </button>
                         </div>
-                        <button type="button" class="add-item" onclick="addListItem('timezone_roles', 'text')">
-                            <i class="fas fa-plus"></i>
-                            Add Timezone
-                        </button>
                     </div>
                 </div>
             </div>

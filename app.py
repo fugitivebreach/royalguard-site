@@ -11,7 +11,14 @@ import json
 
 # Add the parent directory to sys.path to import config
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from configuration.config import owners, ownersTable
+
+# Try to import config, fallback to hardcoded values if import fails
+try:
+    from configuration.config import owners, ownersTable
+except ImportError:
+    print("Warning: Could not import config.py, using fallback values")
+    owners = [1317342800941023242, 1236275658796171334]
+    ownersTable = [1317342800941023242, 1236275658796171334]
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', secrets.token_hex(16))
@@ -23,9 +30,17 @@ DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 MONGO_URI = os.getenv('MONGO_URI', "mongodb+srv://arrowsbritisharmy:cXgXOnuDac4RnAbP@cluster.muqrpfg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster")
 REDIRECT_URI = os.getenv('REDIRECT_URI', 'http://localhost:5000/callback')
 
-# MongoDB setup
-client = MongoClient(MONGO_URI)
-db = client.bot_configs
+# MongoDB setup - with error handling
+try:
+    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+    db = client.bot_configs
+    # Test connection
+    client.admin.command('ping')
+    print("MongoDB connection successful")
+except Exception as e:
+    print(f"MongoDB connection failed: {e}")
+    client = None
+    db = None
 
 # Discord API URLs
 DISCORD_API_BASE = 'https://discord.com/api/v10'
@@ -44,10 +59,15 @@ def login_required(f):
 
 def get_bot_info():
     """Get bot information from Discord API"""
-    headers = {'Authorization': f'Bot {DISCORD_BOT_TOKEN}'}
-    response = requests.get(f'{DISCORD_API_BASE}/users/@me', headers=headers)
-    if response.status_code == 200:
-        return response.json()
+    if not DISCORD_BOT_TOKEN:
+        return None
+    try:
+        headers = {'Authorization': f'Bot {DISCORD_BOT_TOKEN}'}
+        response = requests.get(f'{DISCORD_API_BASE}/users/@me', headers=headers, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+    except Exception as e:
+        print(f"Error getting bot info: {e}")
     return None
 
 def get_user_guilds(access_token):
@@ -104,11 +124,18 @@ def user_can_manage_guild(user_id, guild_id, user_guilds):
 
 @app.route('/')
 def index():
-    bot_info = get_bot_info()
-    return render_template('index.html', bot_info=bot_info)
+    try:
+        bot_info = get_bot_info()
+        return render_template('index.html', bot_info=bot_info)
+    except Exception as e:
+        print(f"Error in index route: {e}")
+        return "Service starting up...", 200
 
 @app.route('/login')
 def login():
+    if not DISCORD_CLIENT_ID:
+        return "Discord OAuth not configured", 500
+    
     params = {
         'client_id': DISCORD_CLIENT_ID,
         'redirect_uri': REDIRECT_URI,
@@ -211,6 +238,9 @@ def save_config(guild_id):
     
     if not user_can_manage_guild(session['user']['id'], guild_id, user_guilds):
         return jsonify({'success': False, 'message': 'Permission denied'}), 403
+    
+    if not db:
+        return jsonify({'success': False, 'message': 'Database unavailable'}), 500
     
     try:
         config_data = request.json

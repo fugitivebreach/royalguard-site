@@ -289,7 +289,7 @@ def configure_guild(guild_id):
         
         # Get current config from MongoDB
         config = {}
-        if db:
+        if db is not None:
             try:
                 config = db.guild_configs.find_one({'guild_id': guild_id}) or {}
                 print(f"Config loaded from DB: {len(config)} keys")
@@ -328,7 +328,7 @@ def save_config(guild_id):
     if not user_can_manage_guild(session['user']['id'], guild_id, user_guilds):
         return jsonify({'success': False, 'message': 'Permission denied'}), 403
     
-    if not db:
+    if db is None:
         return jsonify({'success': False, 'message': 'Database unavailable'}), 500
     
     try:

@@ -38,29 +38,25 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="support_role_id">Support Role</label>
-                            <select id="support_role_id" name="support_role_id" class="role-select">
+                            <select id="support_role_id" name="support_role_id">
                                 <option value="">Select a role...</option>
                                 {% for role in roles %}
-                                <option value="{{ role.id }}" {% if config.support_role_id == role.id|string %}selected{% endif %}>
-                                    {{ role.name }}
-                                </option>
+                                <option value="{{ role.id }}" {% if config.support_role_id == role.id %}selected{% endif %}>{{ role.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="moderator_role_id">Moderator Role</label>
-                            <select id="moderator_role_id" name="moderator_role_id" class="role-select">
+                            <select id="moderator_role_id" name="moderator_role_id">
                                 <option value="">Select a role...</option>
                                 {% for role in roles %}
-                                <option value="{{ role.id }}" {% if config.moderator_role_id == role.id|string %}selected{% endif %}>
-                                    {{ role.name }}
-                                </option>
+                                <option value="{{ role.id }}" {% if config.moderator_role_id == role.id %}selected{% endif %}>{{ role.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="administrator_role_id">Administrator Role</label>
-                            <select id="administrator_role_id" name="administrator_role_id" class="role-select">
+                            <select id="administrator_role_id" name="administrator_role_id">
                                 <option value="">Select a role...</option>
                                 {% for role in roles %}
                                 <option value="{{ role.id }}" {% if config.administrator_role_id == role.id|string %}selected{% endif %}>
@@ -139,6 +135,71 @@
                             </select>
                         </div>
                         <div class="form-group">
+                            <label for="transfer_log_channel_id">Transfer Log Channel</label>
+                            <select id="transfer_log_channel_id" name="transfer_log_channel_id" class="channel-select">
+                                <option value="">Select a channel...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 0 %}
+                                <option value="{{ channel.id }}" {% if config.transfer_log_channel_id == channel.id|string %}selected{% endif %}>
+                                    # {{ channel.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="update_logs_channel_id">Update Logs Channel</label>
+                            <select id="update_logs_channel_id" name="update_logs_channel_id" class="channel-select">
+                                <option value="">Select a channel...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 0 %}
+                                <option value="{{ channel.id }}" {% if config.update_logs_channel_id == channel.id|string %}selected{% endif %}>
+                                    # {{ channel.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="BOT_LOGS_CHANNEL_ID">Bot Logs Channel</label>
+                            <select id="BOT_LOGS_CHANNEL_ID" name="BOT_LOGS_CHANNEL_ID" class="channel-select">
+                                <option value="">Select a channel...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 0 %}
+                                <option value="{{ channel.id }}" {% if config.BOT_LOGS_CHANNEL_ID == channel.id|string %}selected{% endif %}>
+                                    # {{ channel.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="AutoMuteLogs">Auto Mute Logs Channel</label>
+                            <select id="AutoMuteLogs" name="AutoMuteLogs" class="channel-select">
+                                <option value="">Select a channel...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 0 %}
+                                <option value="{{ channel.id }}" {% if config.AutoMuteLogs == channel.id|string %}selected{% endif %}>
+                                    # {{ channel.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="GIVEAWAYS_CHANNEL_ID">Giveaways Channel</label>
+                            <select id="GIVEAWAYS_CHANNEL_ID" name="GIVEAWAYS_CHANNEL_ID" class="channel-select">
+                                <option value="">Select a channel...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 0 %}
+                                <option value="{{ channel.id }}" {% if config.GIVEAWAYS_CHANNEL_ID == channel.id|string %}selected{% endif %}>
+                                    # {{ channel.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
                             <label for="tickets_category_id">Tickets Category</label>
                             <select id="tickets_category_id" name="tickets_category_id" class="channel-select">
                                 <option value="">Select a category...</option>
@@ -179,12 +240,24 @@
                             <input type="text" id="rowifi_api_token" name="rowifi_api_token" value="{{ config.rowifi_api_token or '' }}" placeholder="Enter RoWifi API token">
                         </div>
                         <div class="form-group">
-                            <label for="trello_api_key">Trello API Key</label>
-                            <input type="text" id="trello_api_key" name="trello_api_key" value="{{ config.trello_api_key or '' }}" placeholder="Enter Trello API key">
+                            <label for="TRELLO_API_KEY">Trello API Key</label>
+                            <input type="text" id="TRELLO_API_KEY" name="TRELLO_API_KEY" value="{{ config.TRELLO_API_KEY or '' }}" placeholder="Enter Trello API key">
                         </div>
                         <div class="form-group">
-                            <label for="trello_api_token">Trello API Token</label>
-                            <input type="text" id="trello_api_token" name="trello_api_token" value="{{ config.trello_api_token or '' }}" placeholder="Enter Trello API token">
+                            <label for="TRELLO_API_TOKEN">Trello API Token</label>
+                            <input type="text" id="TRELLO_API_TOKEN" name="TRELLO_API_TOKEN" value="{{ config.TRELLO_API_TOKEN or '' }}" placeholder="Enter Trello API token">
+                        </div>
+                        <div class="form-group">
+                            <label for="ROWIFI_API_TOKEN">RoWifi API Token</label>
+                            <input type="text" id="ROWIFI_API_TOKEN" name="ROWIFI_API_TOKEN" value="{{ config.ROWIFI_API_TOKEN or '' }}" placeholder="Enter RoWifi API token">
+                        </div>
+                        <div class="form-group">
+                            <label for="SSU_GAME_LINK">SSU Game Link</label>
+                            <input type="url" id="SSU_GAME_LINK" name="SSU_GAME_LINK" value="{{ config.SSU_GAME_LINK or '' }}" placeholder="https://www.roblox.com/games/...">
+                        </div>
+                        <div class="form-group">
+                            <label for="main_group_id">Main Group ID</label>
+                            <input type="number" id="main_group_id" name="main_group_id" value="{{ config.main_group_id or '' }}" placeholder="Enter main group ID">
                         </div>
                     </div>
                 </div>

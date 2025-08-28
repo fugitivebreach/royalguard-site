@@ -262,17 +262,29 @@ def dashboard():
 @login_required
 def configure_guild(guild_id):
     try:
-        # Mock data to make template render
-        guild_info = {
+        # Get guild info from Discord API or use fallback
+        guild_info = get_guild_info(guild_id) or {
             'id': guild_id,
             'name': f'Server {guild_id}',
             'icon': None
         }
         
-        config = {}
-        roles = []
-        channels = []
-        bot_info = {'username': 'Royal Guard Bot', 'id': '1367420411922354196'}
+        # Load configuration from database
+        if db is not None:
+            try:
+                config = db.guild_configs.find_one({'guild_id': str(guild_id)}) or {}
+                print(f"Config loaded from DB: {len(config)} keys")
+            except Exception as e:
+                print(f"MongoDB error: {e}")
+                config = {}
+        else:
+            print("No database connection, using empty config")
+            config = {}
+        
+        # Get roles and channels from Discord API
+        roles = get_guild_roles(guild_id) or []
+        channels = get_guild_channels(guild_id) or []
+        bot_info = get_bot_info() or {'username': 'Royal Guard Bot', 'id': '1367420411922354196'}
         print("Rendering configure.html template")
         
         # Debug template variables

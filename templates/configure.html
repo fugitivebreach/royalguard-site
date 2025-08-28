@@ -41,7 +41,7 @@
                             <select id="support_role_id" name="support_role_id" class="role-select">
                                 <option value="">Select a role...</option>
                                 {% for role in roles %}
-                                <option value="{{ role.id }}" {% if config.support_role_id == role.id %}selected{% endif %}>
+                                <option value="{{ role.id }}" {% if config.support_role_id == role.id|string %}selected{% endif %}>
                                     {{ role.name }}
                                 </option>
                                 {% endfor %}
@@ -52,7 +52,7 @@
                             <select id="moderator_role_id" name="moderator_role_id" class="role-select">
                                 <option value="">Select a role...</option>
                                 {% for role in roles %}
-                                <option value="{{ role.id }}" {% if config.moderator_role_id == role.id %}selected{% endif %}>
+                                <option value="{{ role.id }}" {% if config.moderator_role_id == role.id|string %}selected{% endif %}>
                                     {{ role.name }}
                                 </option>
                                 {% endfor %}
@@ -63,7 +63,7 @@
                             <select id="administrator_role_id" name="administrator_role_id" class="role-select">
                                 <option value="">Select a role...</option>
                                 {% for role in roles %}
-                                <option value="{{ role.id }}" {% if config.administrator_role_id == role.id %}selected{% endif %}>
+                                <option value="{{ role.id }}" {% if config.administrator_role_id == role.id|string %}selected{% endif %}>
                                     {{ role.name }}
                                 </option>
                                 {% endfor %}
@@ -74,7 +74,7 @@
                             <select id="suspended_role_id" name="suspended_role_id" class="role-select">
                                 <option value="">Select a role...</option>
                                 {% for role in roles %}
-                                <option value="{{ role.id }}" {% if config.suspended_role_id == role.id %}selected{% endif %}>
+                                <option value="{{ role.id }}" {% if config.suspended_role_id == role.id|string %}selected{% endif %}>
                                     {{ role.name }}
                                 </option>
                                 {% endfor %}
@@ -85,7 +85,7 @@
                             <select id="verified_role_id" name="verified_role_id" class="role-select">
                                 <option value="">Select a role...</option>
                                 {% for role in roles %}
-                                <option value="{{ role.id }}" {% if config.verified_role_id == role.id %}selected{% endif %}>
+                                <option value="{{ role.id }}" {% if config.verified_role_id == role.id|string %}selected{% endif %}>
                                     {{ role.name }}
                                 </option>
                                 {% endfor %}
@@ -96,7 +96,7 @@
                             <select id="nitro_role_id" name="nitro_role_id" class="role-select">
                                 <option value="">Select a role...</option>
                                 {% for role in roles %}
-                                <option value="{{ role.id }}" {% if config.nitro_role_id == role.id %}selected{% endif %}>
+                                <option value="{{ role.id }}" {% if config.nitro_role_id == role.id|string %}selected{% endif %}>
                                     {{ role.name }}
                                 </option>
                                 {% endfor %}
@@ -118,7 +118,7 @@
                                 <option value="">Select a channel...</option>
                                 {% for channel in channels %}
                                 {% if channel.type == 0 %}
-                                <option value="{{ channel.id }}" {% if config.moderation_logs == channel.id %}selected{% endif %}>
+                                <option value="{{ channel.id }}" {% if config.moderation_logs == channel.id|string %}selected{% endif %}>
                                     # {{ channel.name }}
                                 </option>
                                 {% endif %}
@@ -131,7 +131,7 @@
                                 <option value="">Select a channel...</option>
                                 {% for channel in channels %}
                                 {% if channel.type == 0 %}
-                                <option value="{{ channel.id }}" {% if config.tickets_log_channel_id == channel.id %}selected{% endif %}>
+                                <option value="{{ channel.id }}" {% if config.tickets_log_channel_id == channel.id|string %}selected{% endif %}>
                                     # {{ channel.name }}
                                 </option>
                                 {% endif %}
@@ -144,7 +144,7 @@
                                 <option value="">Select a category...</option>
                                 {% for channel in channels %}
                                 {% if channel.type == 4 %}
-                                <option value="{{ channel.id }}" {% if config.tickets_category_id == channel.id %}selected{% endif %}>
+                                <option value="{{ channel.id }}" {% if config.tickets_category_id == channel.id|string %}selected{% endif %}>
                                     📁 {{ channel.name }}
                                 </option>
                                 {% endif %}
@@ -157,7 +157,7 @@
                                 <option value="">Select a channel...</option>
                                 {% for channel in channels %}
                                 {% if channel.type == 0 %}
-                                <option value="{{ channel.id }}" {% if config.update_logs_channel_id == channel.id %}selected{% endif %}>
+                                <option value="{{ channel.id }}" {% if config.update_logs_channel_id == channel.id|string %}selected{% endif %}>
                                     # {{ channel.name }}
                                 </option>
                                 {% endif %}

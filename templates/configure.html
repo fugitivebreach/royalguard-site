@@ -1,206 +1,332 @@
-// Configuration page JavaScript functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('configForm');
-    
-    // Form submission handler
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-        submitBtn.disabled = true;
-        
-        try {
-            const formData = collectFormData();
-            const guildId = window.location.pathname.split('/').pop();
-            
-            const response = await fetch(`/save_config/${guildId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                showNotification('Configuration saved successfully!', 'success');
-            } else {
-                showNotification('Error saving configuration: ' + result.message, 'error');
-            }
-        } catch (error) {
-            showNotification('Error saving configuration: ' + error.message, 'error');
-        } finally {
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        }
-    });
-    
-    // Initialize existing list items with remove functionality
-    document.querySelectorAll('.list-item .remove-item').forEach(btn => {
-        btn.addEventListener('click', function() {
-            this.parentElement.remove();
-        });
-    });
-});
+{% extends "base.html" %}
 
-// Add new list item
-function addListItem(containerId, inputType) {
-    const container = document.getElementById(containerId);
-    if (!container) {
-        console.error(`Container with ID '${containerId}' not found`);
-        return;
-    }
-    
-    const listContainer = container.querySelector('.list-container');
-    if (!listContainer) {
-        console.error(`List container not found in '${containerId}'`);
-        return;
-    }
-    
-    const listItem = document.createElement('div');
-    listItem.className = 'list-item';
-    
-    const input = document.createElement('input');
-    input.type = inputType;
-    input.placeholder = inputType === 'number' ? 'Enter ID' : 'Enter value';
-    
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.className = 'remove-item';
-    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-    removeBtn.addEventListener('click', function() {
-        listItem.remove();
-    });
-    
-    listItem.appendChild(input);
-    listItem.appendChild(removeBtn);
-    listContainer.appendChild(listItem);
-    
-    // Focus the new input
-    input.focus();
-}
+{% block content %}
+<div class="configure-header">
+    <div class="container">
+        <div class="server-header">
+            <div class="server-icon">
+                {% if guild.icon %}
+                <img src="https://cdn.discordapp.com/icons/{{ guild.id }}/{{ guild.icon }}.png?size=64" alt="{{ guild.name }}">
+                {% else %}
+                <div class="server-icon-placeholder">
+                    <i class="fas fa-server"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="server-details">
+                <h1 class="server-name">{{ guild.name }}</h1>
+                <p class="server-id">Configuring server: {{ guild.id }}</p>
+            </div>
+        </div>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i>
+            Back to Dashboard
+        </a>
+    </div>
+</div>
 
-// Collect all form data
-function collectFormData() {
-    const formData = {};
-    
-    // Collect regular form fields
-    const inputs = document.querySelectorAll('#configForm input, #configForm select');
-    inputs.forEach(input => {
-        if (input.name && !input.closest('.list-item')) { // Exclude list items
-            if (input.value) {
-                if (input.type === 'number') {
-                    formData[input.name] = parseInt(input.value);
-                } else {
-                    formData[input.name] = input.value;
-                }
-            }
-        }
-    });
-    
-    // Collect list data
-    const listContainers = document.querySelectorAll('.list-container');
-    listContainers.forEach(container => {
-        const containerId = container.parentElement.id;
-        const values = [];
-        
-        container.querySelectorAll('.list-item input').forEach(input => {
-            if (input.value.trim()) {
-                if (input.type === 'number') {
-                    values.push(parseInt(input.value));
-                } else {
-                    values.push(input.value.trim());
-                }
-            }
-        });
-        
-        // Always set the array, even if empty
-        formData[containerId] = values;
-    });
-    
-    return formData;
-}
+<div class="configure-content">
+    <div class="container">
+        <form id="configForm" class="config-form">
+            <div class="config-sections">
+                <!-- Role Configuration -->
+                <div class="config-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-users"></i>
+                        Role Configuration
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="support_role_id">Support Role</label>
+                            <select id="support_role_id" name="support_role_id" class="role-select">
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if config.support_role_id == role.id|string %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="moderator_role_id">Moderator Role</label>
+                            <select id="moderator_role_id" name="moderator_role_id" class="role-select">
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if config.moderator_role_id == role.id|string %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="administrator_role_id">Administrator Role</label>
+                            <select id="administrator_role_id" name="administrator_role_id" class="role-select">
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if config.administrator_role_id == role.id|string %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="suspended_role_id">Suspended Role</label>
+                            <select id="suspended_role_id" name="suspended_role_id" class="role-select">
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if config.suspended_role_id == role.id|string %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="verified_role_id">Verified Role</label>
+                            <select id="verified_role_id" name="verified_role_id" class="role-select">
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if config.verified_role_id == role.id|string %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="nitro_role_id">Nitro Role</label>
+                            <select id="nitro_role_id" name="nitro_role_id" class="role-select">
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if config.nitro_role_id == role.id|string %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
-// Reset form to original state
-function resetForm() {
-    if (confirm('Are you sure you want to reset all changes?')) {
-        location.reload();
-    }
-}
+                <!-- Channel Configuration -->
+                <div class="config-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-hashtag"></i>
+                        Channel Configuration
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="moderation_logs">Moderation Logs</label>
+                            <select id="moderation_logs" name="moderation_logs" class="channel-select">
+                                <option value="">Select a channel...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 0 %}
+                                <option value="{{ channel.id }}" {% if config.moderation_logs == channel.id|string %}selected{% endif %}>
+                                    # {{ channel.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="tickets_log_channel_id">Tickets Log Channel</label>
+                            <select id="tickets_log_channel_id" name="tickets_log_channel_id" class="channel-select">
+                                <option value="">Select a channel...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 0 %}
+                                <option value="{{ channel.id }}" {% if config.tickets_log_channel_id == channel.id|string %}selected{% endif %}>
+                                    # {{ channel.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="tickets_category_id">Tickets Category</label>
+                            <select id="tickets_category_id" name="tickets_category_id" class="channel-select">
+                                <option value="">Select a category...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 4 %}
+                                <option value="{{ channel.id }}" {% if config.tickets_category_id == channel.id|string %}selected{% endif %}>
+                                    📁 {{ channel.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="update_logs_channel_id">Update Logs Channel</label>
+                            <select id="update_logs_channel_id" name="update_logs_channel_id" class="channel-select">
+                                <option value="">Select a channel...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 0 %}
+                                <option value="{{ channel.id }}" {% if config.update_logs_channel_id == channel.id|string %}selected{% endif %}>
+                                    # {{ channel.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
-// Show notification
-function showNotification(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `flash-message flash-${type}`;
-    notification.innerHTML = `
-        <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'check-circle'}"></i>
-        ${message}
-        <button class="close-flash" onclick="this.parentElement.remove()">
-            <i class="fas fa-times"></i>
-        </button>
-    `;
-    
-    let flashContainer = document.querySelector('.flash-messages');
-    if (!flashContainer) {
-        flashContainer = document.createElement('div');
-        flashContainer.className = 'flash-messages';
-        document.body.appendChild(flashContainer);
-    }
-    
-    flashContainer.appendChild(notification);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.style.opacity = '0';
-            notification.style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
-        }
-    }, 5000);
-}
+                <!-- API Tokens -->
+                <div class="config-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-key"></i>
+                        API Tokens
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="rowifi_api_token">RoWifi API Token</label>
+                            <input type="text" id="rowifi_api_token" name="rowifi_api_token" value="{{ config.rowifi_api_token or '' }}" placeholder="Enter RoWifi API token">
+                        </div>
+                        <div class="form-group">
+                            <label for="trello_api_key">Trello API Key</label>
+                            <input type="text" id="trello_api_key" name="trello_api_key" value="{{ config.trello_api_key or '' }}" placeholder="Enter Trello API key">
+                        </div>
+                        <div class="form-group">
+                            <label for="trello_api_token">Trello API Token</label>
+                            <input type="text" id="trello_api_token" name="trello_api_token" value="{{ config.trello_api_token or '' }}" placeholder="Enter Trello API token">
+                        </div>
+                    </div>
+                </div>
 
-// Enhanced select styling
-document.querySelectorAll('select').forEach(select => {
-    select.addEventListener('focus', function() {
-        this.style.borderColor = 'rgba(255, 215, 0, 0.6)';
-        this.style.boxShadow = '0 0 0 3px rgba(255, 215, 0, 0.1)';
-    });
-    
-    select.addEventListener('blur', function() {
-        this.style.borderColor = 'var(--border-color)';
-        this.style.boxShadow = 'none';
-    });
-});
+                <!-- Custom Lists -->
+                <div class="config-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-list"></i>
+                        Custom Configuration
+                    </h3>
+                    
+                    <!-- Blacklisted Groups -->
+                    <div class="list-config">
+                        <label>Blacklisted Groups</label>
+                        <div id="blacklisted_groups" class="list-container">
+                            {% for group in config.blacklisted_groups or [] %}
+                            <div class="list-item">
+                                <input type="number" value="{{ group }}" placeholder="Group ID">
+                                <button type="button" class="remove-item">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="add-item" onclick="addListItem('blacklisted_groups', 'number')">
+                            <i class="fas fa-plus"></i>
+                            Add Group ID
+                        </button>
+                    </div>
 
-// Auto-save draft functionality (optional)
-let autoSaveTimeout;
-document.querySelectorAll('#configForm input, #configForm select').forEach(input => {
-    input.addEventListener('input', function() {
-        clearTimeout(autoSaveTimeout);
-        autoSaveTimeout = setTimeout(() => {
-            const formData = collectFormData();
-            localStorage.setItem('configDraft_' + window.location.pathname.split('/').pop(), JSON.stringify(formData));
-        }, 1000);
-    });
-});
+                    <!-- Whitelisted Groups -->
+                    <div class="list-config">
+                        <label>Whitelisted Groups</label>
+                        <div id="whitelisted_groups" class="list-container">
+                            {% for group in config.whitelisted_groups or [] %}
+                            <div class="list-item">
+                                <input type="number" value="{{ group }}" placeholder="Group ID">
+                                <button type="button" class="remove-item">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="add-item" onclick="addListItem('whitelisted_groups', 'number')">
+                            <i class="fas fa-plus"></i>
+                            Add Group ID
+                        </button>
+                    </div>
 
-// Load draft on page load
-window.addEventListener('load', function() {
-    const guildId = window.location.pathname.split('/').pop();
-    const draft = localStorage.getItem('configDraft_' + guildId);
-    
-    if (draft) {
-        try {
-            const draftData = JSON.parse(draft);
-            // You could implement draft loading here if needed
-            console.log('Draft found:', draftData);
-        } catch (e) {
-            console.error('Error loading draft:', e);
-        }
-    }
-});
+                    <!-- Blacklisted Names -->
+                    <div class="list-config">
+                        <label>Blacklisted Names</label>
+                        <div id="blacklisted_names" class="list-container">
+                            {% for name in config.blacklisted_names or [] %}
+                            <div class="list-item">
+                                <input type="text" value="{{ name }}" placeholder="Name">
+                                <button type="button" class="remove-item">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="add-item" onclick="addListItem('blacklisted_names', 'text')">
+                            <i class="fas fa-plus"></i>
+                            Add Name
+                        </button>
+                    </div>
+
+                    <!-- Groups to Check -->
+                    <div class="list-config">
+                        <label>Groups to Check</label>
+                        <div id="groups_to_check" class="list-container">
+                            {% for group in config.groups_to_check or [] %}
+                            <div class="list-item">
+                                <input type="number" value="{{ group }}" placeholder="Group ID">
+                                <button type="button" class="remove-item">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="add-item" onclick="addListItem('groups_to_check', 'number')">
+                            <i class="fas fa-plus"></i>
+                            Add Group ID
+                        </button>
+                    </div>
+
+                    <!-- Color Roles -->
+                    <div class="list-config">
+                        <label>Color Roles</label>
+                        <div id="colour_roles" class="list-container">
+                            {% for role in config.colour_roles or [] %}
+                            <div class="list-item">
+                                <input type="text" value="{{ role }}" placeholder="Role Name">
+                                <button type="button" class="remove-item">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="add-item" onclick="addListItem('colour_roles', 'text')">
+                            <i class="fas fa-plus"></i>
+                            Add Color Role
+                        </button>
+                    </div>
+
+                    <!-- Timezone Roles -->
+                    <div class="list-config">
+                        <label>Timezone Roles</label>
+                        <div id="timezone_roles" class="list-container">
+                            {% for role in config.timezone_roles or [] %}
+                            <div class="list-item">
+                                <input type="text" value="{{ role }}" placeholder="Timezone">
+                                <button type="button" class="remove-item">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="add-item" onclick="addListItem('timezone_roles', 'text')">
+                            <i class="fas fa-plus"></i>
+                            Add Timezone
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Save Configuration
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                    <i class="fas fa-undo"></i>
+                    Reset
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- <script src="/static/js/configure.js"></script> -->
+{% endblock %}

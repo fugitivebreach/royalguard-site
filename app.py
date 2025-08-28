@@ -281,13 +281,15 @@ def configure_guild(guild_id):
         print(f"Roles count: {len(roles)}")
         print(f"Channels count: {len(channels)}")
         
-        return render_template('configure.html', 
+        response = app.make_response(render_template('configure.html', 
                              guild=guild_info, 
                              config=config,
                              roles=roles,
                              channels=channels,
                              user=session.get('user', {'username': 'User'}),
-                             bot_info=bot_info)
+                             bot_info=bot_info))
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        return response
     except Exception as e:
         print(f"CRITICAL ERROR in configure_guild: {e}")
         import traceback

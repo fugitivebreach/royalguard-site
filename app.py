@@ -14,7 +14,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # Try to import config, fallback to hardcoded values if import fails
 try:
-    from configuration.config import owners, ownersTable
+    from config import owners, ownersTable
 except ImportError:
     print("Warning: Could not import config.py, using fallback values")
     owners = [1317342800941023242, 1236275658796171334]

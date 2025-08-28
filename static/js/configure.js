@@ -81,11 +81,13 @@ function collectFormData() {
     // Collect regular form fields
     const inputs = document.querySelectorAll('#configForm input, #configForm select');
     inputs.forEach(input => {
-        if (input.name && input.value) {
-            if (input.type === 'number') {
-                formData[input.name] = parseInt(input.value);
-            } else {
-                formData[input.name] = input.value;
+        if (input.name && !input.closest('.list-item')) { // Exclude list items
+            if (input.value) {
+                if (input.type === 'number') {
+                    formData[input.name] = parseInt(input.value);
+                } else {
+                    formData[input.name] = input.value;
+                }
             }
         }
     });
@@ -106,9 +108,8 @@ function collectFormData() {
             }
         });
         
-        if (values.length > 0) {
-            formData[containerId] = values;
-        }
+        // Always set the array, even if empty
+        formData[containerId] = values;
     });
     
     return formData;

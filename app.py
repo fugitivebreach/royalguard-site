@@ -14,7 +14,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # Try to import config, fallback to hardcoded values if import fails
 try:
-    from config import owners, ownersTable
+    from configuration.config import owners, ownersTable
 except ImportError:
     print("Warning: Could not import config.py, using fallback values")
     owners = [1317342800941023242, 1236275658796171334]
@@ -216,7 +216,9 @@ def configure_guild(guild_id):
         return redirect(url_for('dashboard'))
     
     # Get current config from MongoDB
-    config = db.guild_configs.find_one({'guild_id': guild_id}) or {}
+    config = {}
+    if db:
+        config = db.guild_configs.find_one({'guild_id': guild_id}) or {}
     
     # Get guild roles and channels
     roles = get_guild_roles(guild_id)

@@ -328,5 +328,53 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- <script src="/static/js/configure.js"></script> -->
+<script>
+// Add new list item function
+function addListItem(containerId, inputType) {
+    const container = document.getElementById(containerId);
+    if (!container) {
+        console.error(`Container with ID '${containerId}' not found`);
+        return;
+    }
+    
+    const listContainer = container.querySelector('.list-container');
+    if (!listContainer) {
+        console.error(`List container not found in '${containerId}'`);
+        return;
+    }
+    
+    const listItem = document.createElement('div');
+    listItem.className = 'list-item';
+    
+    const input = document.createElement('input');
+    input.type = inputType;
+    input.placeholder = inputType === 'number' ? 'Enter ID' : 'Enter value';
+    
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'remove-item';
+    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+    removeBtn.addEventListener('click', function() {
+        listItem.remove();
+    });
+    
+    listItem.appendChild(input);
+    listItem.appendChild(removeBtn);
+    listContainer.appendChild(listItem);
+    
+    // Focus the new input
+    input.focus();
+}
+
+// Form submission handler
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('configForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Configuration saved successfully!');
+        });
+    }
+});
+</script>
 {% endblock %}

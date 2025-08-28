@@ -88,26 +88,47 @@ def get_bot_guilds():
 
 def get_guild_info(guild_id):
     """Get guild information from Discord API"""
-    headers = {'Authorization': f'Bot {DISCORD_BOT_TOKEN}'}
-    response = requests.get(f'{DISCORD_API_BASE}/guilds/{guild_id}', headers=headers)
-    if response.status_code == 200:
-        return response.json()
+    if not DISCORD_BOT_TOKEN:
+        return None
+    try:
+        headers = {'Authorization': f'Bot {DISCORD_BOT_TOKEN}'}
+        response = requests.get(f'{DISCORD_API_BASE}/guilds/{guild_id}', headers=headers, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Failed to get guild info for {guild_id}: {response.status_code}")
+    except Exception as e:
+        print(f"Error getting guild info: {e}")
     return None
 
 def get_guild_roles(guild_id):
     """Get guild roles from Discord API"""
-    headers = {'Authorization': f'Bot {DISCORD_BOT_TOKEN}'}
-    response = requests.get(f'{DISCORD_API_BASE}/guilds/{guild_id}/roles', headers=headers)
-    if response.status_code == 200:
-        return response.json()
+    if not DISCORD_BOT_TOKEN:
+        return []
+    try:
+        headers = {'Authorization': f'Bot {DISCORD_BOT_TOKEN}'}
+        response = requests.get(f'{DISCORD_API_BASE}/guilds/{guild_id}/roles', headers=headers, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Failed to get roles for guild {guild_id}: {response.status_code}")
+    except Exception as e:
+        print(f"Error getting guild roles: {e}")
     return []
 
 def get_guild_channels(guild_id):
     """Get guild channels from Discord API"""
-    headers = {'Authorization': f'Bot {DISCORD_BOT_TOKEN}'}
-    response = requests.get(f'{DISCORD_API_BASE}/guilds/{guild_id}/channels', headers=headers)
-    if response.status_code == 200:
-        return response.json()
+    if not DISCORD_BOT_TOKEN:
+        return []
+    try:
+        headers = {'Authorization': f'Bot {DISCORD_BOT_TOKEN}'}
+        response = requests.get(f'{DISCORD_API_BASE}/guilds/{guild_id}/channels', headers=headers, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Failed to get channels for guild {guild_id}: {response.status_code}")
+    except Exception as e:
+        print(f"Error getting guild channels: {e}")
     return []
 
 def user_can_manage_guild(user_id, guild_id, user_guilds):
@@ -204,34 +225,43 @@ def dashboard():
 @app.route('/configure/<guild_id>')
 @login_required
 def configure_guild(guild_id):
-    user_guilds = get_user_guilds(session['access_token'])
-    
-    if not user_can_manage_guild(session['user']['id'], guild_id, user_guilds):
-        flash('You do not have permission to manage this server', 'error')
+    try:
+        user_guilds = get_user_guilds(session['access_token'])
+        
+        if not user_can_manage_guild(session['user']['id'], guild_id, user_guilds):
+            flash('You do not have permission to manage this server', 'error')
+            return redirect(url_for('dashboard'))
+        
+        guild_info = get_guild_info(guild_id)
+        if not guild_info:
+            flash('Server not found', 'error')
+            return redirect(url_for('dashboard'))
+        
+        # Get current config from MongoDB
+        config = {}
+        if db:
+            try:
+                config = db.guild_configs.find_one({'guild_id': guild_id}) or {}
+            except Exception as e:
+                print(f"MongoDB error: {e}")
+                config = {}
+        
+        # Get guild roles and channels
+        roles = get_guild_roles(guild_id) or []
+        channels = get_guild_channels(guild_id) or []
+        
+        bot_info = get_bot_info()
+        return render_template('configure.html', 
+                             guild=guild_info, 
+                             config=config,
+                             roles=roles,
+                             channels=channels,
+                             user=session['user'],
+                             bot_info=bot_info)
+    except Exception as e:
+        print(f"Error in configure_guild: {e}")
+        flash('Error loading configuration page', 'error')
         return redirect(url_for('dashboard'))
-    
-    guild_info = get_guild_info(guild_id)
-    if not guild_info:
-        flash('Server not found', 'error')
-        return redirect(url_for('dashboard'))
-    
-    # Get current config from MongoDB
-    config = {}
-    if db:
-        config = db.guild_configs.find_one({'guild_id': guild_id}) or {}
-    
-    # Get guild roles and channels
-    roles = get_guild_roles(guild_id)
-    channels = get_guild_channels(guild_id)
-    
-    bot_info = get_bot_info()
-    return render_template('configure.html', 
-                         guild=guild_info, 
-                         config=config,
-                         roles=roles,
-                         channels=channels,
-                         user=session['user'],
-                         bot_info=bot_info)
 
 @app.route('/save_config/<guild_id>', methods=['POST'])
 @login_required

@@ -91,6 +91,15 @@ MONGO_URI = os.getenv('MONGO_URI')
 # Default redirect updated per user request; can still be overridden by environment
 REDIRECT_URI = os.getenv('REDIRECT_URI', 'https://royalguard.up.railway.app/callback')
 
+# Debug environment variables immediately
+print("=== Flask App Startup Debug ===")
+print(f"DISCORD_CLIENT_ID: {'SET' if DISCORD_CLIENT_ID else 'MISSING'}")
+print(f"DISCORD_CLIENT_SECRET: {'SET' if DISCORD_CLIENT_SECRET else 'MISSING'}")  
+print(f"DISCORD_BOT_TOKEN: {'SET' if DISCORD_BOT_TOKEN else 'MISSING'}")
+print(f"MONGO_URI: {'SET' if MONGO_URI else 'MISSING'}")
+print(f"REDIRECT_URI: {REDIRECT_URI}")
+print("=== Environment Check Complete ===")
+
 # MongoDB setup - with error handling
 try:
     if MONGO_URI:
@@ -475,12 +484,3 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     print(f"Starting Flask app on port {port}")
     app.run(debug=False, host='0.0.0.0', port=port)
-
-# Add startup logging for Railway debugging
-print("=== Flask App Startup ===")
-print(f"DISCORD_CLIENT_ID: {'SET' if DISCORD_CLIENT_ID else 'MISSING'}")
-print(f"DISCORD_CLIENT_SECRET: {'SET' if DISCORD_CLIENT_SECRET else 'MISSING'}")
-print(f"DISCORD_BOT_TOKEN: {'SET' if DISCORD_BOT_TOKEN else 'MISSING'}")
-print(f"MONGO_URI: {'SET' if MONGO_URI else 'MISSING'}")
-print(f"REDIRECT_URI: {REDIRECT_URI}")
-print("=== App Ready ===")

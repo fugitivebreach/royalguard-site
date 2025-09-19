@@ -88,7 +88,8 @@ DISCORD_CLIENT_ID = os.getenv('DISCORD_CLIENT_ID')
 DISCORD_CLIENT_SECRET = os.getenv('DISCORD_CLIENT_SECRET')
 DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 MONGO_URI = os.getenv('MONGO_URI')
-REDIRECT_URI = os.getenv('REDIRECT_URI', 'http://localhost:5000/callback')
+# Default redirect updated per user request; can still be overridden by environment
+REDIRECT_URI = os.getenv('REDIRECT_URI', 'https://royalguard.up.railway.app/callback')
 
 # MongoDB setup - with error handling
 try:
@@ -121,6 +122,27 @@ def login_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
+
+def get_effective_redirect_uri() -> str:
+    """Resolve the redirect URI dynamically based on the request environment.
+    Priority:
+      1) Explicit REDIRECT_URI env var
+      2) Build from request headers (X-Forwarded-Proto/Host) -> https://host/callback
+      3) Fallback to request.url_root + 'callback'
+    """
+    if REDIRECT_URI and REDIRECT_URI != 'http://localhost:5000/callback':
+        return REDIRECT_URI
+    try:
+        # Respect proxy headers set by Railway/Load balancers
+        proto = request.headers.get('X-Forwarded-Proto', request.scheme or 'https')
+        host = request.headers.get('X-Forwarded-Host') or request.headers.get('Host')
+        if host:
+            return f"{proto}://{host}/callback"
+        # Fallback to url_root
+        root = request.url_root.rstrip('/')
+        return f"{root}/callback"
+    except Exception:
+        return REDIRECT_URI
 
 def get_bot_info():
     """Get bot information from Discord API"""
@@ -241,9 +263,15 @@ def login():
     if not DISCORD_CLIENT_ID or not DISCORD_CLIENT_SECRET:
         return "Discord OAuth not configured - missing client credentials", 500
     
+    effective_redirect = get_effective_redirect_uri()
+    try:
+        print(f"OAuth: using redirect_uri={effective_redirect}")
+    except Exception:
+        pass
+
     params = {
         'client_id': DISCORD_CLIENT_ID,
-        'redirect_uri': REDIRECT_URI,
+        'redirect_uri': effective_redirect,
         'response_type': 'code',
         'scope': 'identify guilds'
     }
@@ -258,12 +286,13 @@ def callback():
         return redirect(url_for('index'))
     
     # Exchange code for access token
+    effective_redirect = get_effective_redirect_uri()
     data = {
         'client_id': DISCORD_CLIENT_ID,
         'client_secret': DISCORD_CLIENT_SECRET,
         'grant_type': 'authorization_code',
         'code': code,
-        'redirect_uri': REDIRECT_URI
+        'redirect_uri': effective_redirect
     }
     
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -283,7 +312,13 @@ def callback():
             session['access_token'] = access_token
             return redirect(url_for('dashboard'))
     
-    flash('Login failed', 'error')
+    try:
+        print(f"OAuth token exchange failed: status={response.status_code} body={response.text}")
+        print(f"Using redirect_uri={effective_redirect}; ensure it exactly matches one of the Redirect URIs in your Discord application settings.")
+    except Exception:
+        pass
+
+    flash('Login failed. Ensure your Discord application includes this exact redirect URI and your env vars are set.', 'error')
     return redirect(url_for('index'))
 
 @app.route('/dashboard')

@@ -501,6 +501,15 @@ def configure_guild(guild_id):
         # Get roles and channels from Discord API
         roles = get_guild_roles(guild_id) or []
         channels = get_guild_channels(guild_id) or []
+        
+        # Convert Discord API role/channel IDs from strings to integers for template matching
+        for role in roles:
+            if 'id' in role and isinstance(role['id'], str) and role['id'].isdigit():
+                role['id'] = int(role['id'])
+        
+        for channel in channels:
+            if 'id' in channel and isinstance(channel['id'], str) and channel['id'].isdigit():
+                channel['id'] = int(channel['id'])
         bot_info = get_bot_info() or {'username': 'Royal Guard Bot', 'id': '1367420411922354196'}
         print("Rendering configure.html template")
         

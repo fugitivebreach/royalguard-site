@@ -723,8 +723,20 @@ function collectListValues(containerId, type) {
 
 // Form submission handler
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, looking for form...');
     const form = document.getElementById('configForm');
-    if (!form) return;
+    if (!form) {
+        console.error('Form with ID configForm not found!');
+        return;
+    }
+    console.log('Form found:', form);
+    
+    // Pre-build channel options for dynamic elements
+    const channelOptions = `
+        {% for channel in channels %}{% if channel.type == 0 %}
+        <option value="{{ channel.id }}"># {{ channel.name }}</option>
+        {% endif %}{% endfor %}
+    `;
 
     // Wire add/remove for dynamic Panel rows
     const panelsContainer = document.getElementById('panels_container');
@@ -736,9 +748,7 @@ document.addEventListener('DOMContentLoaded', function() {
             row.innerHTML = `
                 <select class="panel-channel">
                     <option value="">Select a channel...</option>
-                    {% for channel in channels %}{% if channel.type == 0 %}
-                    <option value="{{ channel.id }}"># {{ channel.name }}</option>
-                    {% endif %}{% endfor %}
+                    ${channelOptions}
                 </select>
                 <input type="text" class="panel-message" placeholder="Message ID (optional)">
                 <button type="button" class="remove-item"><i class="fas fa-times"></i></button>
@@ -763,9 +773,7 @@ document.addEventListener('DOMContentLoaded', function() {
             row.innerHTML = `
                 <select class="ignored-channel">
                     <option value="">Select a channel...</option>
-                    {% for channel in channels %}{% if channel.type == 0 %}
-                    <option value="{{ channel.id }}"># {{ channel.name }}</option>
-                    {% endif %}{% endfor %}
+                    ${channelOptions}
                 </select>
                 <button type="button" class="remove-item"><i class="fas fa-times"></i></button>
             `;
@@ -780,6 +788,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
+        console.log('Form submitted! Preparing payload...');
 
         // Gather role/channel select values
         const getVal = (id) => {

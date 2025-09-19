@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""Royal Guard Bot Dashboard - Main Application"""
+
+print("=== STARTING MAIN APP ===")
+
 def build_default_config_for_template():
     """Build default config dict for the dashboard without importing project code.
 
@@ -35,16 +40,25 @@ def build_default_config_for_template():
         'colour_roles': [],
         'timezone_roles': [],
     }
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
-import requests
-import os
-import sys
-from pymongo import MongoClient
-from urllib.parse import urlencode
-import secrets
-from datetime import datetime
-from functools import wraps
-import json
+print("=== IMPORTING MODULES ===")
+try:
+    from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
+    print("✓ Flask imported")
+    import requests
+    print("✓ requests imported")
+    import os
+    import sys
+    from pymongo import MongoClient
+    print("✓ pymongo imported")
+    from urllib.parse import urlencode
+    import secrets
+    from datetime import datetime
+    from functools import wraps
+    import json
+    print("✓ All modules imported successfully")
+except Exception as e:
+    print(f"✗ Import error: {e}")
+    raise
 
 # Add the parent directory to sys.path to import config
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))

@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "gunicorn website.app:app -w 2 -k gthread --threads 4 -b 0.0.0.0:$PORT --timeout 60 --keep-alive 5",
+    "startCommand": "python app.py",
     "healthcheckPath": "/ping",
     "healthcheckTimeout": 30,
     "restartPolicyType": "ON_FAILURE",

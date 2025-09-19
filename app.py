@@ -506,7 +506,13 @@ def configure_guild(guild_id):
         
         # Debug template variables
         print(f"Guild info: {guild_info}")
-        print(f"Config keys: {list(config.keys()) if config else 'None'}")
+        print(f"Raw config keys: {list(config.keys()) if config else 'None'}")
+        print(f"Merged config keys: {list(merged_config.keys()) if merged_config else 'None'}")
+        print(f"Sample merged config values:")
+        sample_fields = ['support_role_id', 'moderator_role_id', 'watchlistRoleID', 'unfairMuteCategoryID']
+        for field in sample_fields:
+            if field in merged_config:
+                print(f"  {field}: {merged_config[field]} (type: {type(merged_config[field])})")
         print(f"Roles count: {len(roles)}")
         print(f"Channels count: {len(channels)}")
         
@@ -540,16 +546,34 @@ def save_config(guild_id):
         config_data = request.json
         if not config_data:
             return jsonify({'success': False, 'message': 'No configuration data received'}), 400
+        
+        # Filter out empty values - only save non-empty configuration
+        filtered_config = {}
+        for key, value in config_data.items():
+            if value is not None and value != "" and value != []:
+                # Convert string numbers to integers for role/channel IDs
+                if key.endswith(('_id', '_role_id', '_channel_id', 'RoleID', 'CategoryID', 'LOGS_ID', 'CHANNEL_ID', 'GROUP_ID', 'RANK_ID')):
+                    try:
+                        if isinstance(value, str) and value.isdigit():
+                            filtered_config[key] = int(value)
+                        elif isinstance(value, (int, float)):
+                            filtered_config[key] = int(value)
+                        else:
+                            filtered_config[key] = value
+                    except (ValueError, TypeError):
+                        filtered_config[key] = value
+                else:
+                    filtered_config[key] = value
             
-        print(f"Saving config for guild {guild_id}: {len(config_data)} fields")
-        config_data['guild_id'] = str(guild_id)  # Ensure string consistency
-        config_data['updated_at'] = datetime.utcnow()
-        config_data['updated_by'] = session['user']['id']
+        print(f"Saving config for guild {guild_id}: {len(filtered_config)} non-empty fields")
+        filtered_config['guild_id'] = str(guild_id)  # Ensure string consistency
+        filtered_config['updated_at'] = datetime.utcnow()
+        filtered_config['updated_by'] = session['user']['id']
         
         # Update or insert config
         result = db.guild_configs.update_one(
             {'guild_id': str(guild_id)},  # Ensure string consistency
-            {'$set': config_data},
+            {'$set': filtered_config},
             upsert=True
         )
         

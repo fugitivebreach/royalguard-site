@@ -431,8 +431,45 @@ def configure_guild(guild_id):
                     cfg[key] = int(val)
             except Exception:
                 pass
-        coerce_int_field(merged_config, 'support_role_id')
-        coerce_int_field(merged_config, 'moderator_role_id')
+        
+        # Coerce all role and channel fields to integers
+        role_fields = [
+            # Basic roles
+            'support_role_id', 'moderator_role_id', 'administrator_role_id', 
+            'suspended_role_id', 'verified_role_id', 'nitro_role_id',
+            # Verification roles
+            'chiefsofstaff_role_id', 'op_role_id',
+            # Ticket roles
+            'support_team_role_id', 'moderator_role_id_diff', 'administrator_role_id_diff',
+            'developer_role_id_diff', 'sib_role_id_diff', 'cos_role_id_diff',
+            # Moderation roles
+            'watchlistRoleID',
+            # Miscellaneous roles
+            'nitroRoleID', 'extrasRoleID', 'flexRoleID', 'verifiedRoleID', 'suspendedRoleID'
+        ]
+        
+        channel_fields = [
+            # Basic channels
+            'moderation_logs', 'tickets_log_channel_id', 'transfer_log_channel_id',
+            'update_logs_channel_id', 'BOT_LOGS_CHANNEL_ID', 'AutoMuteLogs',
+            'GIVEAWAYS_CHANNEL_ID', 'tickets_category_id', 'verification_category_id',
+            'MANAGEMENT_LOGS_ID', 'EXILE_LOGS_ID', 'BMT_LOGS_CHANNEL_ID',
+            'EVENT_POSTS_CHANNEL_ID', 'TRYOUT_CATEGORY_ID', 'unfairMuteCategoryID',
+            'MASS_CLOSURE_LOG_CHANNEL_ID', 'TICKET_CATEGORY_ID',
+            # Verification channels
+            'verification_logs_channel_id',
+            # Moderation channels
+            'moderationLogs',
+            # Miscellaneous channels
+            'colorsGuildID', 'shiftChannelID',
+            # Event channels
+            'SERVERSTARTUP_CHANNEL_ID', 'ACTIVITY_CHECK_CHANNEL_ID',
+            # Log channels
+            'joinLogs', 'leaveLogs', 'statsReport'
+        ]
+        
+        for field in role_fields + channel_fields:
+            coerce_int_field(merged_config, field)
         
         # Get roles and channels from Discord API
         roles = get_guild_roles(guild_id) or []

@@ -174,7 +174,7 @@ def get_user_guilds(access_token):
 def get_bot_guilds():
     """Get bot's guilds from Discord API"""
     headers = {'Authorization': f'Bot {DISCORD_BOT_TOKEN}'}
-    response = requests.get(f'{DISCORD_API_BASE}/users/@me/guilds', headers=headers)
+    response = requests.get(f'{DISCORD_API_BASE}/users/@me/guilds', headers=headers, timeout=10)
     if response.status_code == 200:
         return response.json()
     return []
@@ -465,6 +465,11 @@ def logout():
 @app.route('/health')
 def health():
     return {'status': 'healthy', 'service': 'Royal Guard Bot Dashboard'}, 200
+
+# Ultra-fast liveness route (plain text)
+@app.route('/ping')
+def ping():
+    return "pong", 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

@@ -245,6 +245,63 @@ function collectIgnoredChannels() {
                             </select>
                         </div>
                         <div class="form-group">
+                            <label for="unfairMuteCategoryID">Unfair Mute Category</label>
+                            <select id="unfairMuteCategoryID" name="unfairMuteCategoryID" class="channel-select">
+                                <option value="">Select a category...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 4 %}
+                                <option value="{{ channel.id }}" {% if config.unfairMuteCategoryID == channel.id|string %}selected{% endif %}>
+                                    📁 {{ channel.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="watchlistRoleID">Watchlist Role</label>
+                            <select id="watchlistRoleID" name="watchlistRoleID" class="role-select">
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if config.watchlistRoleID == role.id|string %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="developer_role_id_diff">Developer Role</label>
+                            <select id="developer_role_id_diff" name="developer_role_id_diff" class="role-select">
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if config.developer_role_id_diff == role.id|string %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="sib_role_id_diff">SIB Role</label>
+                            <select id="sib_role_id_diff" name="sib_role_id_diff" class="role-select">
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if config.sib_role_id_diff == role.id|string %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="cos_role_id_diff">COS Role</label>
+                            <select id="cos_role_id_diff" name="cos_role_id_diff" class="role-select">
+                                <option value="">Select a role...</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if config.cos_role_id_diff == role.id|string %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
                             <label for="verification_category_id">Verification Category</label>
                             <select id="verification_category_id" name="verification_category_id" class="channel-select">
                                 <option value="">Select a category...</option>
@@ -308,19 +365,6 @@ function collectIgnoredChannels() {
                                 {% for channel in channels %}
                                 {% if channel.type == 4 %}
                                 <option value="{{ channel.id }}" {% if config.TRYOUT_CATEGORY_ID == channel.id|string %}selected{% endif %}>📁 {{ channel.name }}</option>
-                                {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="update_logs_channel_id">Update Logs Channel</label>
-                            <select id="update_logs_channel_id" name="update_logs_channel_id" class="channel-select">
-                                <option value="">Select a channel...</option>
-                                {% for channel in channels %}
-                                {% if channel.type == 0 %}
-                                <option value="{{ channel.id }}" {% if config.update_logs_channel_id == channel.id|string %}selected{% endif %}>
-                                    # {{ channel.name }}
-                                </option>
                                 {% endif %}
                                 {% endfor %}
                             </select>
@@ -774,6 +818,11 @@ document.addEventListener('DOMContentLoaded', function() {
             TRELLO_API_TOKEN: getVal('TRELLO_API_TOKEN'),
             SSU_GAME_LINK: getVal('SSU_GAME_LINK'),
             main_group_id: getVal('main_group_id'),
+            BMT_GROUP_ID: getVal('BMT_GROUP_ID'),
+            BMT_RANK_ID: getVal('BMT_RANK_ID'),
+            BMT_REQUIRED_RANK: getVal('BMT_REQUIRED_RANK'),
+            ETS_GROUP_ID: getVal('ETS_GROUP_ID'),
+            ETS_MIN_RANK_ID: getVal('ETS_MIN_RANK_ID'),
 
             // Lists
             blacklisted_groups: collectListValues('blacklisted_groups', 'number'),
@@ -787,16 +836,26 @@ document.addEventListener('DOMContentLoaded', function() {
             PANELS: collectPanels(),
             MASS_CLOSURE_LOG_CHANNEL_ID: getVal('MASS_CLOSURE_LOG_CHANNEL_ID'),
             TICKET_CATEGORY_ID: getVal('TICKET_CATEGORY_ID'),
-            IGNORED_CHANNEL_IDS: collectIgnoredChannels()
+            IGNORED_CHANNEL_IDS: collectIgnoredChannels(),
+            
+            // Additional fields
+            unfairMuteCategoryID: getVal('unfairMuteCategoryID'),
+            watchlistRoleID: getVal('watchlistRoleID'),
+            developer_role_id_diff: getVal('developer_role_id_diff'),
+            sib_role_id_diff: getVal('sib_role_id_diff'),
+            cos_role_id_diff: getVal('cos_role_id_diff')
         };
 
         try {
+            console.log('Saving configuration payload:', payload);
             const res = await fetch(`/save_config/{{ guild.id }}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
+            console.log('Response status:', res.status);
             const data = await res.json();
+            console.log('Response data:', data);
             if (data && data.success) {
                 alert('Configuration saved successfully!');
                 // Optionally refresh to load persisted values

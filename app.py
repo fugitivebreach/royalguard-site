@@ -39,6 +39,12 @@ def build_default_config_for_template():
         'groups_to_check': [],
         'colour_roles': [],
         'timezone_roles': [],
+        # Additional fields
+        'unfairMuteCategoryID': '',
+        'watchlistRoleID': '',
+        'developer_role_id_diff': '',
+        'sib_role_id_diff': '',
+        'cos_role_id_diff': '',
     }
 print("=== IMPORTING MODULES ===")
 try:
@@ -457,19 +463,28 @@ def save_config(guild_id):
     
     try:
         config_data = request.json
+        if not config_data:
+            return jsonify({'success': False, 'message': 'No configuration data received'}), 400
+            
+        print(f"Saving config for guild {guild_id}: {len(config_data)} fields")
         config_data['guild_id'] = guild_id
         config_data['updated_at'] = datetime.utcnow()
         config_data['updated_by'] = session['user']['id']
         
         # Update or insert config
-        db.guild_configs.update_one(
+        result = db.guild_configs.update_one(
             {'guild_id': guild_id},
             {'$set': config_data},
             upsert=True
         )
         
+        print(f"Database update result: matched={result.matched_count}, modified={result.modified_count}, upserted={result.upserted_id}")
+        
         return jsonify({'success': True, 'message': 'Configuration saved successfully'})
     except Exception as e:
+        print(f"Error saving config: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @app.route('/invite')

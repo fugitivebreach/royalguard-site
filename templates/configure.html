@@ -1,5 +1,37 @@
 {% extends "base.html" %}
 
+// Collect panel rows into an object: { channel_id: message_id or '' }
+function collectPanels() {
+    const container = document.getElementById('panels_container');
+    const result = {};
+    if (!container) return result;
+    const rows = container.querySelectorAll('.panel-row');
+    rows.forEach(row => {
+        const chSel = row.querySelector('.panel-channel');
+        const msgInp = row.querySelector('.panel-message');
+        const chId = chSel && chSel.value ? chSel.value : '';
+        const msgId = msgInp && msgInp.value ? msgInp.value.trim() : '';
+        if (chId) {
+            result[chId] = msgId || '';
+        }
+    });
+    return result;
+}
+
+// Collect ignored channels into an array
+function collectIgnoredChannels() {
+    const container = document.getElementById('ignored_channels');
+    const values = [];
+    if (!container) return values;
+    const rows = container.querySelectorAll('.ignored-row');
+    rows.forEach(row => {
+        const sel = row.querySelector('.ignored-channel');
+        const val = sel && sel.value ? sel.value : '';
+        if (val) values.push(val);
+    });
+    return values;
+}
+
 {% block content %}
 <div class="configure-header">
     <div class="container">
@@ -213,6 +245,74 @@
                             </select>
                         </div>
                         <div class="form-group">
+                            <label for="verification_category_id">Verification Category</label>
+                            <select id="verification_category_id" name="verification_category_id" class="channel-select">
+                                <option value="">Select a category...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 4 %}
+                                <option value="{{ channel.id }}" {% if config.verification_category_id == channel.id|string %}selected{% endif %}>
+                                    📁 {{ channel.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="MANAGEMENT_LOGS_ID">Management Logs Channel</label>
+                            <select id="MANAGEMENT_LOGS_ID" name="MANAGEMENT_LOGS_ID" class="channel-select">
+                                <option value="">Select a channel...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 0 %}
+                                <option value="{{ channel.id }}" {% if config.MANAGEMENT_LOGS_ID == channel.id|string %}selected{% endif %}># {{ channel.name }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="EXILE_LOGS_ID">Exile Logs Channel</label>
+                            <select id="EXILE_LOGS_ID" name="EXILE_LOGS_ID" class="channel-select">
+                                <option value="">Select a channel...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 0 %}
+                                <option value="{{ channel.id }}" {% if config.EXILE_LOGS_ID == channel.id|string %}selected{% endif %}># {{ channel.name }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="BMT_LOGS_CHANNEL_ID">BMT Logs Channel</label>
+                            <select id="BMT_LOGS_CHANNEL_ID" name="BMT_LOGS_CHANNEL_ID" class="channel-select">
+                                <option value="">Select a channel...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 0 %}
+                                <option value="{{ channel.id }}" {% if config.BMT_LOGS_CHANNEL_ID == channel.id|string %}selected{% endif %}># {{ channel.name }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="EVENT_POSTS_CHANNEL_ID">Event Posts Channel</label>
+                            <select id="EVENT_POSTS_CHANNEL_ID" name="EVENT_POSTS_CHANNEL_ID" class="channel-select">
+                                <option value="">Select a channel...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 0 %}
+                                <option value="{{ channel.id }}" {% if config.EVENT_POSTS_CHANNEL_ID == channel.id|string %}selected{% endif %}># {{ channel.name }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="TRYOUT_CATEGORY_ID">Tryout Category</label>
+                            <select id="TRYOUT_CATEGORY_ID" name="TRYOUT_CATEGORY_ID" class="channel-select">
+                                <option value="">Select a category...</option>
+                                {% for channel in channels %}
+                                {% if channel.type == 4 %}
+                                <option value="{{ channel.id }}" {% if config.TRYOUT_CATEGORY_ID == channel.id|string %}selected{% endif %}>📁 {{ channel.name }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
                             <label for="update_logs_channel_id">Update Logs Channel</label>
                             <select id="update_logs_channel_id" name="update_logs_channel_id" class="channel-select">
                                 <option value="">Select a channel...</option>
@@ -250,10 +350,6 @@
                         <div class="form-group">
                             <label for="SSU_GAME_LINK">SSU Game Link</label>
                             <input type="url" id="SSU_GAME_LINK" name="SSU_GAME_LINK" value="{{ config.SSU_GAME_LINK or '' }}" placeholder="https://www.roblox.com/games/...">
-                        </div>
-                        <div class="form-group">
-                            <label for="main_group_id">Main Group ID</label>
-                            <input type="number" id="main_group_id" name="main_group_id" value="{{ config.main_group_id or '' }}" placeholder="Enter main group ID">
                         </div>
                     </div>
                 </div>
@@ -349,6 +445,34 @@
                         </div>
                     </div>
 
+                    <!-- Group & BMT Settings -->
+                    <div class="form-grid" style="margin-top: 20px;">
+                        <div class="form-group">
+                            <label for="main_group_id">Main Group ID</label>
+                            <input type="number" id="main_group_id" name="main_group_id" value="{{ config.main_group_id or '' }}" placeholder="Enter main group ID">
+                        </div>
+                        <div class="form-group">
+                            <label for="BMT_GROUP_ID">BMT Group ID</label>
+                            <input type="number" id="BMT_GROUP_ID" name="BMT_GROUP_ID" value="{{ config.BMT_GROUP_ID or '' }}" placeholder="Enter BMT group ID">
+                        </div>
+                        <div class="form-group">
+                            <label for="BMT_RANK_ID">BMT Rank ID</label>
+                            <input type="number" id="BMT_RANK_ID" name="BMT_RANK_ID" value="{{ config.BMT_RANK_ID or '' }}" placeholder="Enter BMT rank ID">
+                        </div>
+                        <div class="form-group">
+                            <label for="BMT_REQUIRED_RANK">BMT Required Rank</label>
+                            <input type="number" id="BMT_REQUIRED_RANK" name="BMT_REQUIRED_RANK" value="{{ config.BMT_REQUIRED_RANK or '' }}" placeholder="Enter BMT required rank">
+                        </div>
+                        <div class="form-group">
+                            <label for="ETS_GROUP_ID">ETS Group ID</label>
+                            <input type="number" id="ETS_GROUP_ID" name="ETS_GROUP_ID" value="{{ config.ETS_GROUP_ID or '' }}" placeholder="Enter ETS group ID">
+                        </div>
+                        <div class="form-group">
+                            <label for="ETS_MIN_RANK_ID">ETS Min Rank ID</label>
+                            <input type="number" id="ETS_MIN_RANK_ID" name="ETS_MIN_RANK_ID" value="{{ config.ETS_MIN_RANK_ID or '' }}" placeholder="Enter ETS minimum rank ID">
+                        </div>
+                    </div>
+
                     <!-- Color Roles -->
                     <div class="list-config">
                         <label>Color Roles</label>
@@ -388,6 +512,92 @@
                                 <i class="fas fa-plus"></i>
                                 Add Timezone
                             </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paneling Configuration -->
+            <div class="config-section">
+                <h3 class="section-title">
+                    <i class="fas fa-sliders-h"></i>
+                    Paneling
+                </h3>
+
+                <div class="form-grid">
+                    <!-- Mass Ticket Closing Panel (channel -> message) -->
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>Mass Ticket Closing Panel(s)</label>
+                        <div id="panels_container" class="list-config">
+                            <div class="list-container">
+                                {% if config.PANELS %}
+                                    {% for chan_id, msg_id in config.PANELS.items() %}
+                                    <div class="list-item panel-row">
+                                        <select class="panel-channel">
+                                            <option value="">Select a channel...</option>
+                                            {% for channel in channels %}
+                                            {% if channel.type == 0 %}
+                                            <option value="{{ channel.id }}" {% if chan_id == channel.id|string %}selected{% endif %}># {{ channel.name }}</option>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                        <input type="text" class="panel-message" placeholder="Message ID (optional)" value="{{ msg_id or '' }}">
+                                        <button type="button" class="remove-item"><i class="fas fa-times"></i></button>
+                                    </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            <button type="button" class="add-item" id="add_panel_row"><i class="fas fa-plus"></i> Add Panel</button>
+                        </div>
+                        <small>ChannelID : MessageID (MessageID optional; leave blank to create a new message later)</small>
+                    </div>
+
+                    <!-- Mass closure logs channel -->
+                    <div class="form-group">
+                        <label for="MASS_CLOSURE_LOG_CHANNEL_ID">Mass Closure Log Channel</label>
+                        <select id="MASS_CLOSURE_LOG_CHANNEL_ID" name="MASS_CLOSURE_LOG_CHANNEL_ID" class="channel-select">
+                            <option value="">Select a channel...</option>
+                            {% for channel in channels %}
+                            {% if channel.type == 0 %}
+                            <option value="{{ channel.id }}" {% if config.MASS_CLOSURE_LOG_CHANNEL_ID == channel.id|string %}selected{% endif %}># {{ channel.name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Ticket Category -->
+                    <div class="form-group">
+                        <label for="TICKET_CATEGORY_ID">Ticket Category</label>
+                        <select id="TICKET_CATEGORY_ID" name="TICKET_CATEGORY_ID" class="channel-select">
+                            <option value="">Select a category...</option>
+                            {% for channel in channels %}
+                            {% if channel.type == 4 %}
+                            <option value="{{ channel.id }}" {% if config.TICKET_CATEGORY_ID == channel.id|string %}selected{% endif %}>📁 {{ channel.name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Ignored channels -->
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>Ignored Channels</label>
+                        <div id="ignored_channels" class="list-config">
+                            <div class="list-container">
+                                {% for ch_id in config.IGNORED_CHANNEL_IDS or [] %}
+                                <div class="list-item ignored-row">
+                                    <select class="ignored-channel">
+                                        <option value="">Select a channel...</option>
+                                        {% for channel in channels %}
+                                        {% if channel.type == 0 %}
+                                        <option value="{{ channel.id }}" {% if ch_id == channel.id|string %}selected{% endif %}># {{ channel.name }}</option>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                    <button type="button" class="remove-item"><i class="fas fa-times"></i></button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="add-item" id="add_ignored_channel"><i class="fas fa-plus"></i> Add Ignored Channel</button>
                         </div>
                     </div>
                 </div>
@@ -447,15 +657,158 @@ function addListItem(containerId, inputType) {
     input.focus();
 }
 
+// Helpers to collect list values
+function collectListValues(containerId, type) {
+    const container = document.getElementById(containerId);
+    const values = [];
+    if (!container) return values;
+    const inputs = container.querySelectorAll('.list-container input');
+    inputs.forEach(input => {
+        const val = input.value.trim();
+        if (val !== '') {
+            if (type === 'number') {
+                const num = Number(val);
+                if (!Number.isNaN(num)) values.push(num);
+            } else {
+                values.push(val);
+            }
+        }
+    });
+    return values;
+}
+
 // Form submission handler
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('configForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Configuration saved successfully!');
+    if (!form) return;
+
+    // Wire add/remove for dynamic Panel rows
+    const panelsContainer = document.getElementById('panels_container');
+    const addPanelBtn = document.getElementById('add_panel_row');
+    if (addPanelBtn && panelsContainer) {
+        addPanelBtn.addEventListener('click', function() {
+            const row = document.createElement('div');
+            row.className = 'list-item panel-row';
+            row.innerHTML = `
+                <select class="panel-channel">
+                    <option value="">Select a channel...</option>
+                    {% for channel in channels %}{% if channel.type == 0 %}
+                    <option value="{{ channel.id }}"># {{ channel.name }}</option>
+                    {% endif %}{% endfor %}
+                </select>
+                <input type="text" class="panel-message" placeholder="Message ID (optional)">
+                <button type="button" class="remove-item"><i class="fas fa-times"></i></button>
+            `;
+            panelsContainer.querySelector('.list-container').appendChild(row);
+        });
+        panelsContainer.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-item')) {
+                const row = e.target.closest('.list-item');
+                if (row) row.remove();
+            }
         });
     }
+
+    // Wire add/remove for Ignored Channels rows
+    const ignoredContainer = document.getElementById('ignored_channels');
+    const addIgnoredBtn = document.getElementById('add_ignored_channel');
+    if (addIgnoredBtn && ignoredContainer) {
+        addIgnoredBtn.addEventListener('click', function() {
+            const row = document.createElement('div');
+            row.className = 'list-item ignored-row';
+            row.innerHTML = `
+                <select class="ignored-channel">
+                    <option value="">Select a channel...</option>
+                    {% for channel in channels %}{% if channel.type == 0 %}
+                    <option value="{{ channel.id }}"># {{ channel.name }}</option>
+                    {% endif %}{% endfor %}
+                </select>
+                <button type="button" class="remove-item"><i class="fas fa-times"></i></button>
+            `;
+            ignoredContainer.querySelector('.list-container').appendChild(row);
+        });
+        ignoredContainer.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-item')) {
+                const row = e.target.closest('.list-item');
+                if (row) row.remove();
+            }
+        });
+    }
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Gather role/channel select values
+        const getVal = (id) => {
+            const el = document.getElementById(id);
+            return el && el.value ? el.value : '';
+        };
+
+        const payload = {
+            // Roles
+            support_role_id: getVal('support_role_id'),
+            moderator_role_id: getVal('moderator_role_id'),
+            administrator_role_id: getVal('administrator_role_id'),
+            suspended_role_id: getVal('suspended_role_id'),
+            verified_role_id: getVal('verified_role_id'),
+            nitro_role_id: getVal('nitro_role_id'),
+
+            // Channels
+            moderation_logs: getVal('moderation_logs'),
+            tickets_log_channel_id: getVal('tickets_log_channel_id'),
+            transfer_log_channel_id: getVal('transfer_log_channel_id'),
+            update_logs_channel_id: getVal('update_logs_channel_id'),
+            BOT_LOGS_CHANNEL_ID: getVal('BOT_LOGS_CHANNEL_ID'),
+            AutoMuteLogs: getVal('AutoMuteLogs'),
+            GIVEAWAYS_CHANNEL_ID: getVal('GIVEAWAYS_CHANNEL_ID'),
+            tickets_category_id: getVal('tickets_category_id'),
+            verification_category_id: getVal('verification_category_id'),
+            MANAGEMENT_LOGS_ID: getVal('MANAGEMENT_LOGS_ID'),
+            EXILE_LOGS_ID: getVal('EXILE_LOGS_ID'),
+            BMT_LOGS_CHANNEL_ID: getVal('BMT_LOGS_CHANNEL_ID'),
+            EVENT_POSTS_CHANNEL_ID: getVal('EVENT_POSTS_CHANNEL_ID'),
+            TRYOUT_CATEGORY_ID: getVal('TRYOUT_CATEGORY_ID'),
+
+            // Tokens and misc
+            ROWIFI_API_TOKEN: getVal('ROWIFI_API_TOKEN'),
+            TRELLO_API_KEY: getVal('TRELLO_API_KEY'),
+            TRELLO_API_TOKEN: getVal('TRELLO_API_TOKEN'),
+            SSU_GAME_LINK: getVal('SSU_GAME_LINK'),
+            main_group_id: getVal('main_group_id'),
+
+            // Lists
+            blacklisted_groups: collectListValues('blacklisted_groups', 'number'),
+            whitelisted_groups: collectListValues('whitelisted_groups', 'number'),
+            blacklisted_names: collectListValues('blacklisted_names', 'text'),
+            groups_to_check: collectListValues('groups_to_check', 'number'),
+            colour_roles: collectListValues('colour_roles', 'text'),
+            timezone_roles: collectListValues('timezone_roles', 'text')
+            ,
+            // Paneling
+            PANELS: collectPanels(),
+            MASS_CLOSURE_LOG_CHANNEL_ID: getVal('MASS_CLOSURE_LOG_CHANNEL_ID'),
+            TICKET_CATEGORY_ID: getVal('TICKET_CATEGORY_ID'),
+            IGNORED_CHANNEL_IDS: collectIgnoredChannels()
+        };
+
+        try {
+            const res = await fetch(`/save_config/{{ guild.id }}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data && data.success) {
+                alert('Configuration saved successfully!');
+                // Optionally refresh to load persisted values
+                location.reload();
+            } else {
+                alert('Failed to save configuration: ' + (data && data.message ? data.message : 'Unknown error'));
+            }
+        } catch (err) {
+            console.error('Save failed', err);
+            alert('Failed to save configuration. Please try again.');
+        }
+    });
 });
 </script>
 {% endblock %}

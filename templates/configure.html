@@ -721,6 +721,38 @@ function collectListValues(containerId, type) {
     return values;
 }
 
+// Collect panel rows into an object: { channel_id: message_id or '' }
+function collectPanels() {
+    const container = document.getElementById('panels_container');
+    const result = {};
+    if (!container) return result;
+    const rows = container.querySelectorAll('.panel-row');
+    rows.forEach(row => {
+        const chSel = row.querySelector('.panel-channel');
+        const msgInp = row.querySelector('.panel-message');
+        const chId = chSel && chSel.value ? chSel.value : '';
+        const msgId = msgInp && msgInp.value ? msgInp.value.trim() : '';
+        if (chId) {
+            result[chId] = msgId || '';
+        }
+    });
+    return result;
+}
+
+// Collect ignored channels into an array
+function collectIgnoredChannels() {
+    const container = document.getElementById('ignored_channels');
+    const values = [];
+    if (!container) return values;
+    const rows = container.querySelectorAll('.ignored-row');
+    rows.forEach(row => {
+        const sel = row.querySelector('.ignored-channel');
+        const val = sel && sel.value ? sel.value : '';
+        if (val) values.push(val);
+    });
+    return values;
+}
+
 // Form submission handler
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, looking for form...');

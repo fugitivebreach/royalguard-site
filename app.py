@@ -468,8 +468,35 @@ def configure_guild(guild_id):
             'joinLogs', 'leaveLogs', 'statsReport'
         ]
         
-        for field in role_fields + channel_fields:
+        # Numeric fields (group IDs, rank IDs, etc.)
+        numeric_fields = [
+            # Group configuration
+            'main_group_id', 'BMT_GROUP_ID', 'BMT_RANK_ID', 'BMT_REQUIRED_RANK',
+            'ETS_GROUP_ID', 'ETS_MIN_RANK_ID',
+            # Other numeric fields
+            'colorsGuildID'
+        ]
+        
+        for field in role_fields + channel_fields + numeric_fields:
             coerce_int_field(merged_config, field)
+        
+        # Handle array fields (blacklisted_groups, whitelisted_groups, etc.)
+        def coerce_array_field(cfg, key):
+            val = cfg.get(key)
+            if isinstance(val, list):
+                try:
+                    # Convert string numbers to integers in arrays
+                    cfg[key] = [int(x) if isinstance(x, str) and x.isdigit() else x for x in val]
+                except Exception:
+                    pass
+        
+        array_fields = [
+            'blacklisted_groups', 'whitelisted_groups', 'groups_to_check',
+            'tester_role_id_diff', 'IGNORED_CHANNEL_IDS', 'colour_roles', 'timezone_roles'
+        ]
+        
+        for field in array_fields:
+            coerce_array_field(merged_config, field)
         
         # Get roles and channels from Discord API
         roles = get_guild_roles(guild_id) or []

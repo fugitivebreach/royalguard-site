@@ -513,6 +513,21 @@ def configure_guild(guild_id):
         for field in sample_fields:
             if field in merged_config:
                 print(f"  {field}: {merged_config[field]} (type: {type(merged_config[field])})")
+        
+        # Debug role matching
+        if 'support_role_id' in merged_config and merged_config['support_role_id']:
+            support_role_id = merged_config['support_role_id']
+            print(f"Looking for support role ID: {support_role_id}")
+            matching_role = None
+            for role in roles:
+                if role['id'] == support_role_id or str(role['id']) == str(support_role_id):
+                    matching_role = role
+                    break
+            if matching_role:
+                print(f"Found matching role: {matching_role['name']} (ID: {matching_role['id']}, type: {type(matching_role['id'])})")
+            else:
+                print(f"No matching role found! First few role IDs: {[role['id'] for role in roles[:3]]}")
+        
         print(f"Roles count: {len(roles)}")
         print(f"Channels count: {len(channels)}")
         

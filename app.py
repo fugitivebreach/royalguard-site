@@ -1,3 +1,40 @@
+def build_default_config_for_template():
+    """Build default config dict for the dashboard without importing project code.
+
+    The website must run standalone on Railway, so we avoid importing configuration.config.
+    Defaults are empty; MongoDB values will populate real settings when present.
+    """
+    return {
+        # Roles
+        'support_role_id': '',
+        'moderator_role_id': '',
+        'administrator_role_id': '',
+        'suspended_role_id': '',
+        'verified_role_id': '',
+        'nitro_role_id': '',
+        # Channels
+        'moderation_logs': '',
+        'tickets_log_channel_id': '',
+        'transfer_log_channel_id': '',
+        'update_logs_channel_id': '',
+        'BOT_LOGS_CHANNEL_ID': '',
+        'AutoMuteLogs': '',
+        'GIVEAWAYS_CHANNEL_ID': '',
+        'tickets_category_id': '',
+        # Tokens and misc
+        'ROWIFI_API_TOKEN': '',
+        'TRELLO_API_KEY': '',
+        'TRELLO_API_TOKEN': '',
+        'SSU_GAME_LINK': '',
+        # Grouping
+        'main_group_id': '',
+        'blacklisted_groups': [],
+        'whitelisted_groups': [],
+        'blacklisted_names': [],
+        'groups_to_check': [],
+        'colour_roles': [],
+        'timezone_roles': [],
+    }
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 import requests
 import os
@@ -12,13 +49,36 @@ import json
 # Add the parent directory to sys.path to import config
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-# Try to import config, fallback to hardcoded values if import fails
+# Load environment variables from .env files if available
 try:
-    from configuration.config import owners, ownersTable
-except ImportError:
-    print("Warning: Could not import config.py, using fallback values")
-    owners = [1317342800941023242, 1236275658796171334]
-    ownersTable = [1317342800941023242, 1236275658796171334]
+    from dotenv import load_dotenv  # type: ignore
+    # Load .env from website/ first, then project root .env as fallback/override
+    load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+    load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+except Exception:
+    # Fallback: simple loader for key=value lines if python-dotenv is not installed
+    def _simple_load_env(env_path: str):
+        try:
+            if not os.path.exists(env_path):
+                return
+            with open(env_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith('#'):
+                        continue
+                    if '=' in line:
+                        k, v = line.split('=', 1)
+                        k = k.strip()
+                        v = v.strip().strip('"').strip("'")
+                        os.environ.setdefault(k, v)
+        except Exception:
+            pass
+    _simple_load_env(os.path.join(os.path.dirname(__file__), '.env'))
+    _simple_load_env(os.path.join(os.path.dirname(__file__), '..', '.env'))
+
+# Do not import any project python modules; only use environment and MongoDB
+owners = [int(x) for x in os.getenv('OWNERS', '1317342800941023242').split(',') if x.strip().isdigit()]
+ownersTable = owners[:]
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', secrets.token_hex(16))
@@ -281,6 +341,24 @@ def configure_guild(guild_id):
             print("No database connection, using empty config")
             config = {}
         
+        # Merge with defaults so configure.html always has expected keys
+        defaults = build_default_config_for_template()
+        # Precedence: DB > defaults (no project imports on Railway)
+        merged_config = {**defaults, **config}
+        
+        # Coerce specific fields to int to match template comparisons that use raw role.id (no |string)
+        def coerce_int_field(cfg, key):
+            val = cfg.get(key)
+            try:
+                if isinstance(val, str) and val.isdigit():
+                    cfg[key] = int(val)
+                elif isinstance(val, (int, float)):
+                    cfg[key] = int(val)
+            except Exception:
+                pass
+        coerce_int_field(merged_config, 'support_role_id')
+        coerce_int_field(merged_config, 'moderator_role_id')
+        
         # Get roles and channels from Discord API
         roles = get_guild_roles(guild_id) or []
         channels = get_guild_channels(guild_id) or []
@@ -295,7 +373,7 @@ def configure_guild(guild_id):
         
         response = app.make_response(render_template('configure.html', 
                              guild=guild_info, 
-                             config=config,
+                             config=merged_config,
                              roles=roles,
                              channels=channels,
                              user=session.get('user', {'username': 'User'}),

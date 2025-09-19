@@ -396,8 +396,19 @@ def configure_guild(guild_id):
         # Load configuration from database
         if db is not None:
             try:
+                print(f"Looking for config with guild_id: '{str(guild_id)}'")
                 config = db.guild_configs.find_one({'guild_id': str(guild_id)}) or {}
                 print(f"Config loaded from DB: {len(config)} keys")
+                if config:
+                    print(f"Config keys: {list(config.keys())[:10]}")  # Show first 10 keys
+                else:
+                    print("No config found in database")
+                    # Check if there are any configs at all
+                    total_configs = db.guild_configs.count_documents({})
+                    print(f"Total configs in database: {total_configs}")
+                    if total_configs > 0:
+                        sample_config = db.guild_configs.find_one({})
+                        print(f"Sample config guild_id: '{sample_config.get('guild_id')}' (type: {type(sample_config.get('guild_id'))})")
             except Exception as e:
                 print(f"MongoDB error: {e}")
                 config = {}
@@ -467,13 +478,13 @@ def save_config(guild_id):
             return jsonify({'success': False, 'message': 'No configuration data received'}), 400
             
         print(f"Saving config for guild {guild_id}: {len(config_data)} fields")
-        config_data['guild_id'] = guild_id
+        config_data['guild_id'] = str(guild_id)  # Ensure string consistency
         config_data['updated_at'] = datetime.utcnow()
         config_data['updated_by'] = session['user']['id']
         
         # Update or insert config
         result = db.guild_configs.update_one(
-            {'guild_id': guild_id},
+            {'guild_id': str(guild_id)},  # Ensure string consistency
             {'$set': config_data},
             upsert=True
         )
